@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Âncora Psicologia - Painel Administrativo</title>
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+    /* Regra para telas de celular (até 768px de largura) */
+    @media (max-width: 768px) {
+        /* Faz os 3 cards de receita/despesa empilharem na vertical */
+        main div[style*="grid-template-columns"] {
+            grid-template-columns: 1fr !important;
+        }
+        
+        /* Ajusta o espaçamento interno para não sobrar bordas na tela do celular */
+        .container {
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+        }
+
+        /* Faz as tabelas permitirem rolagem lateral se forem muito largas */
+        .feature-card {
+            overflow-x: auto;
+        }
+    }
+</style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-anchor logo-icon"></i>
+            <span>Âncora <span style="color: var(--brand-green); font-weight: 400;">Psicologia</span></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span style="font-size: 0.9rem; color: #4A5568;"><i class="fa-solid fa-user-shield"></i> Modo Admin</span>
+            <button onclick="sessionStorage.clear(); window.location.href='login.html';" class="btn-cta" style="background: transparent; color: #2D3748; border: 1px solid #CBD5E0; padding: 6px 15px;">Sair</button>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 100px; padding-bottom: 50px;">
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <span class="hero-content"><span class="badge" style="background-color: #feebc8; color: #c05621;">PAINEL OPERACIONAL</span></span>
+            <h2 style="margin-top: 15px;">Relatórios e Indicadores Gerenciais</h2>
+            <p style="color: #718096;">Controle de faturamento, fluxo de caixa e lançamentos da clínica.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
+            
+            <div class="feature-card" style="text-align: left; border-top: 4px solid #2CB473; background: #FFF;">
+                <span style="font-size: 0.85rem; font-weight: bold; color: #718096;">TOTAL DE RECEITAS</span>
+                <h2 id="kpiReceitas" style="color: #2CB473; margin-top: 5px; font-size: 1.8rem;">R$ 0,00</h2>
+                <p style="font-size: 0.75rem; color: #A0AEC0; margin-top: 5px;"><i class="fa-solid fa-arrow-trend-up"></i> Entradas registradas</p>
+            </div>
+
+            <div class="feature-card" style="text-align: left; border-top: 4px solid #E53E3E; background: #FFF;">
+                <span style="font-size: 0.85rem; font-weight: bold; color: #718096;">TOTAL DE DESPESAS</span>
+                <h2 id="kpiDespesas" style="color: #E53E3E; margin-top: 5px; font-size: 1.8rem;">R$ 0,00</h2>
+                <p style="font-size: 0.75rem; color: #A0AEC0; margin-top: 5px;"><i class="fa-solid fa-arrow-trend-down"></i> Custos e despesas de operação</p>
+            </div>
+
+            <div class="feature-card" id="cardSaldo" style="text-align: left; border-top: 4px solid #4299E1; background: #FFF;">
+                <span style="font-size: 0.85rem; font-weight: bold; color: #718096;">SALDO LÍQUIDO MENSAL</span>
+                <h2 id="kpiSaldo" style="color: #4299E1; margin-top: 5px; font-size: 1.8rem;">R$ 0,00</h2>
+                <p style="font-size: 0.75rem; color: #A0AEC0; margin-top: 5px;"><i class="fa-solid fa-wallet"></i> Caixa disponível</p>
+            </div>
+
+        </div>
+
+        <div class="feature-card" style="text-align: left; background: #FFF; padding: 25px;">
+            <h3 style="margin-bottom: 15px;"><i class="fa-solid fa-list-check" style="color: var(--brand-blue); margin-right: 8px;"></i> Extrato de Fluxo de Caixa</h3>
+            <p style="font-size: 0.85rem; color: #718096; margin-bottom: 20px;">Lista de transações individuais puxadas em tempo real da tabela financeira do Supabase.</p>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                <thead>
+                    <tr style="background: #F7FAFC; border-bottom: 2px solid #E2E8F0; text-align: left;">
+                        <th style="padding: 12px; color: #4A5568;">Descrição do Lançamento</th>
+                        <th style="padding: 12px; color: #4A5568;">Tipo</th>
+                        <th style="padding: 12px; color: #4A5568; text-align: right;">Valor</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaFinanceiraBody">
+                    <tr>
+                        <td colspan="3" style="padding: 15px; text-align: center; color: #A0AEC0; font-style: italic;">Carregando dados do relatório...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. VERIFICAÇÃO DE SEGURANÇA E ACESSO
+            const dadosLogado = sessionStorage.getItem("usuario_logado");
+            if (!dadosLogado) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            const usuario = JSON.parse(dadosLogado);
+            
+            // Aceita tanto 'administrador' quanto 'admin' vindo da coluna perfil
+            if (usuario.perfil !== 'administrador' && usuario.perfil !== 'admin') {
+                alert("Acesso negado. Esta área é restrita apenas ao administrador.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            // 2. DISPARA A REQUISIÇÃO PARA A ROTA FINANCEIRA
+            carregarDadosDoRelatorio();
+
+            async function carregarDadosDoRelatorio() {
+                try {
+                    const response = await fetch('http://localhost:4000/api/admin/financeiro');
+                    const dados = await response.json();
+
+                    if (!response.ok) throw new Error(dados.error || 'Erro na requisição.');
+
+                    // Formata e preenche os 3 cards do topo
+                    document.getElementById("kpiReceitas").textContent = `R$ ${parseFloat(dados.resumo.receitas).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    document.getElementById("kpiDespesas").textContent = `R$ ${parseFloat(dados.resumo.despesas).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    
+                    const saldo = parseFloat(dados.resumo.saldo);
+                    const kpiSaldo = document.getElementById("kpiSaldo");
+                    kpiSaldo.textContent = `R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    
+                    // Alerta visual caso a clínica esteja operando no vermelho
+                    if (saldo < 0) {
+                        document.getElementById("cardSaldo").style.borderTopColor = "#E53E3E";
+                        kpiSaldo.style.color = "#E53E3E";
+                    } else {
+                        document.getElementById("cardSaldo").style.borderTopColor = "#2B6CB0";
+                        kpiSaldo.style.color = "#2B6CB0";
+                    }
+
+                    // Renderiza as linhas do extrato financeiro
+                    const tbody = document.getElementById("tabelaFinanceiraBody");
+                    tbody.innerHTML = "";
+
+                    if (dados.lancamentos.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="3" style="padding: 15px; text-align: center; color: #718096; font-style: italic;">Nenhum lançamento financeiro encontrado.</td></tr>`;
+                        return;
+                    }
+
+                    dados.lancamentos.forEach(item => {
+                        const corTipo = item.tipo === 'Receita' ? '#2CB473' : '#E53E3E';
+                        const iconeTipo = item.tipo === 'Receita' ? '<i class="fa-solid fa-circle-arrow-up"></i>' : '<i class="fa-solid fa-circle-arrow-down"></i>';
+                        
+                        tbody.innerHTML += `
+                            <tr style="border-bottom: 1px solid #E2E8F0;">
+                                <td style="padding: 12px; color: #2D3748; font-weight: 500;">${item.descricao}</td>
+                                <td style="padding: 12px; color: ${corTipo}; font-weight: bold; font-size: 0.85rem;">
+                                    ${iconeTipo} ${item.tipo.toUpperCase()}
+                                </td>
+                                <td style="padding: 12px; text-align: right; color: #2D3748; font-weight: bold;">
+                                    R$ ${parseFloat(item.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                } catch (err) {
+                    document.getElementById("tabelaFinanceiraBody").innerHTML = `
+                        <tr>
+                            <td colspan="3" style="padding: 15px; text-align: center; color: #E53E3E; font-weight: bold;">
+                                <i class="fa-solid fa-circle-exclamation"></i> Erro ao conectar ao servidor de relatórios: ${err.message}
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

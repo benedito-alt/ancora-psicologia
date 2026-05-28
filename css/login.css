@@ -1,0 +1,327 @@
+/* ==========================================================================
+   VARIÁVEIS DE DESIGN INTEGRADO
+   ========================================================================== */
+:root {
+    --brand-blue: #1B4380;       /* Azul Escuro/Petróleo */
+    --brand-green: #2CB473;      /* Verde Menta/Esmeralda */
+    --bg-offwhite: #F8F9FA;      /* Fundo Off-White */
+    --text-dark: #2D3748;        
+    --white: #FFFFFF;            
+    --gray-light: #E2E8F0;       
+    --error-red: #E53E3E;
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--gray-light);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dark);
+}
+
+.login-container {
+    width: 100%;
+    max-width: 1100px;
+    height: 650px;
+    background-color: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    display: flex;
+    overflow: hidden;
+    margin: 20px;
+}
+
+/* ==========================================================================
+   LADO DO FORMULÁRIO (ESQUERDO)
+   ========================================================================== */
+.login-form-side {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: var(--white);
+}
+
+.form-wrapper {
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.btn-back {
+    color: var(--brand-blue);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 25px;
+    transition: var(--transition);
+}
+
+.btn-back:hover {
+    color: var(--brand-green);
+    transform: translateX(-2px);
+}
+
+.login-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--brand-blue);
+    margin-bottom: 20px;
+}
+
+.login-logo span span {
+    color: var(--brand-green);
+    font-weight: 400;
+}
+
+.login-header h2 {
+    color: var(--brand-blue);
+    font-size: 1.7rem;
+    margin-bottom: 5px;
+}
+
+.login-header p {
+    font-size: 0.9rem;
+    color: #718096;
+    margin-bottom: 30px;
+}
+
+/* Campos de Entrada (Inputs) */
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--brand-blue);
+    margin-bottom: 6px;
+}
+
+.password-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.forgot-link {
+    font-size: 0.8rem;
+    color: var(--brand-blue);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.forgot-link:hover {
+    color: var(--brand-green);
+}
+
+.input-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.icon-input {
+    position: absolute;
+    left: 14px;
+    color: #A0AEC0;
+    font-size: 1rem;
+}
+
+.input-field input, .input-field select {
+    width: 100%;
+    padding: 12px 15px 12px 42px;
+    border: 1.5px solid var(--gray-light);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    background-color: var(--bg-offwhite);
+    outline: none;
+    transition: var(--transition);
+    appearance: none; /* Remove seta padrão do select */
+}
+
+/* Seta customizada para o Select */
+.input-field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231B4380'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px;
+}
+
+.input-field input:focus, .input-field select:focus {
+    border-color: var(--brand-blue);
+    background-color: var(--white);
+    box-shadow: 0 0 0 3px rgba(27, 67, 128, 0.1);
+}
+
+#togglePassword {
+    position: absolute;
+    right: 14px;
+    color: #A0AEC0;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+#togglePassword:hover {
+    color: var(--brand-blue);
+}
+
+/* Feedback de Erro */
+.error-box {
+    display: none;
+    background-color: rgba(229, 62, 98, 0.1);
+    color: var(--error-red);
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--error-red);
+    font-weight: 500;
+}
+
+/* Botão Submit */
+.btn-submit {
+    width: 100%;
+    background-color: var(--brand-green);
+    color: var(--white);
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition);
+}
+
+.btn-submit:hover {
+    background-color: #21965F;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(44, 180, 115, 0.15);
+}
+
+.form-footer {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 0.85rem;
+}
+
+.form-footer a {
+    color: var(--brand-green);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   LADO INSTITUCIONAL DE DESTAQUE (DIREITO)
+   ========================================================================== */
+.login-design-side {
+    flex: 1;
+    background-color: var(--brand-blue);
+    background-image: linear-gradient(135deg, var(--brand-blue) 0%, #122D56 100%);
+    padding: 50px;
+    display: flex;
+    align-items: center;
+    color: var(--white);
+    position: relative;
+}
+
+/* Efeito decorativo simulando a logo ou conexão */
+.login-design-side::before {
+    content: '';
+    position: absolute;
+    bottom: -50px;
+    right: -50px;
+    width: 250px;
+    height: 250px;
+    background-color: rgba(44, 180, 115, 0.1);
+    border-radius: 50%;
+}
+
+.design-content {
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.brand-badge {
+    background-color: rgba(44, 180, 115, 0.2);
+    color: var(--brand-green);
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+}
+
+.design-content h3 {
+    font-size: 1.8rem;
+    line-height: 1.3;
+    margin-bottom: 15px;
+}
+
+.design-content p {
+    font-size: 0.95rem;
+    opacity: 0.85;
+    margin-bottom: 30px;
+}
+
+.mini-features {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mini-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.mini-item i {
+    color: var(--brand-green);
+}
+
+/* ==========================================================================
+   MUDANÇA PARA CELULARES
+   ========================================================================== */
+@media (max-width: 850px) {
+    .login-design-side {
+        display: none; /* Esconde o painel direito */
+    }
+    .login-container {
+        max-width: 480px;
+        height: auto;
+    }
+    .login-form-side {
+        padding: 40px 25px;
+    }
+}

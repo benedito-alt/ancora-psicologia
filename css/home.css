@@ -1,0 +1,529 @@
+/* ==========================================================================
+   VARIÁVEIS DE CORES E CONFIGURAÇÕES GERAIS (Identidade Âncora Psicologia)
+   ========================================================================== */
+:root {
+    --brand-blue: #1B4380;       /* Azul Escuro/Petróleo (Confiança e Estabilidade) */
+    --brand-green: #2CB473;      /* Verde Menta/Esmeralda (Saúde e Renovação) */
+    --bg-offwhite: #F8F9FA;      /* Fundo Off-White (Conforto Visual) */
+    --text-dark: #2D3748;        /* Cinza escuro para excelente leitura */
+    --white: #FFFFFF;            /* Branco para componentes e cards */
+    --gray-light: #E2E8F0;       /* Cinza para bordas e divisores */
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--bg-offwhite);
+    color: var(--text-dark);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+}
+
+/* Componentes de Botão */
+.btn-cta {
+    background-color: var(--brand-green);
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+}
+
+.btn-cta:hover {
+    background-color: #21965F;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(44, 180, 115, 0.2);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--brand-blue);
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    border: 2px solid var(--brand-blue);
+    transition: var(--transition);
+}
+
+.btn-secondary:hover {
+    background-color: var(--brand-blue);
+    color: var(--white);
+}
+
+/* ==========================================================================
+   CABEÇALHO (NAVBAR)
+   ========================================================================== */
+.navbar {
+    background-color: var(--white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 5%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    color: var(--brand-blue);
+    font-size: 1.8rem;
+}
+
+.logo-text {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--brand-blue);
+}
+
+.logo-text span {
+    color: var(--brand-green);
+    font-weight: 400;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-link {
+    color: var(--text-dark);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.nav-link:hover {
+    color: var(--brand-blue);
+}
+
+.nav-auth {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.btn-login {
+    color: var(--brand-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-login:hover {
+    color: var(--brand-green);
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--brand-blue);
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   SEÇÃO HERO (INTRODUÇÃO)
+   ========================================================================== */
+.hero {
+    background-color: var(--white);
+    padding: 80px 5% 100px 5%;
+}
+
+.hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 50px;
+}
+
+.hero-content .badge {
+    background-color: rgba(27, 67, 128, 0.1);
+    color: var(--brand-blue);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.hero-content h1 {
+    font-size: 2.8rem;
+    color: var(--brand-blue);
+    line-height: 1.2;
+    margin: 20px 0;
+}
+
+.hero-content p {
+    font-size: 1.1rem;
+    color: #4A5568;
+    margin-bottom: 40px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.btn-large {
+    padding: 15px 30px;
+    font-size: 1.05rem;
+}
+
+/* Representação Visual do Painel (Mockup) */
+.dashboard-mockup {
+    background: #1A202C;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+
+.mockup-header {
+    background: #2D3748;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mockup-header .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #E53E3E;
+}
+.mockup-header .dot:nth-child(2) { background: #ECC94B; }
+.mockup-header .dot:nth-child(3) { background: #38A169; }
+
+.mockup-title {
+    color: #A0AEC0;
+    font-size: 0.75rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.mockup-body {
+    display: flex;
+    height: 250px;
+}
+
+.mockup-sidebar {
+    width: 50px;
+    background: #2D3748;
+    opacity: 0.5;
+}
+
+.mockup-main {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.mockup-card-grid {
+    display: flex;
+    gap: 15px;
+}
+
+.m-card {
+    background: #2D3748;
+    flex: 1;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    color: #A0AEC0;
+}
+
+.m-card strong {
+    display: block;
+    font-size: 1.2rem;
+    color: var(--white);
+    margin-top: 5px;
+}
+
+.m-card strong.green {
+    color: var(--brand-green);
+}
+
+.mockup-chart {
+    background: #2D3748;
+    flex: 1;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 15px;
+}
+
+.chart-bar {
+    width: 25px;
+    background: var(--brand-blue);
+    border-radius: 4px 4px 0 0;
+    opacity: 0.8;
+}
+.chart-bar:nth-child(3) {
+    background: var(--brand-green);
+}
+
+/* ==========================================================================
+   SEÇÃO DE MÓDULOS / FUNCIONALIDADES
+   ========================================================================== */
+.features {
+    padding: 100px 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 60px auto;
+}
+
+.section-header h2 {
+    font-size: 2.2rem;
+    color: var(--brand-blue);
+    margin-bottom: 15px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.feature-card {
+    background-color: var(--white);
+    padding: 40px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    border: 1px solid var(--gray-light);
+    transition: var(--transition);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(27, 67, 128, 0.05);
+    border-color: rgba(27, 67, 128, 0.2);
+}
+
+.icon-box {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(44, 180, 115, 0.1);
+    color: var(--brand-green);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.feature-card h3 {
+    font-size: 1.3rem;
+    color: var(--brand-blue);
+    margin-bottom: 15px;
+}
+
+/* ==========================================================================
+   SEÇÃO BENEFÍCIOS E STATS
+   ========================================================================== */
+.benefits {
+    background-color: var(--brand-blue);
+    color: var(--white);
+    padding: 80px 5%;
+}
+
+.benefits-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 50px;
+    align-items: center;
+}
+
+.benefits-text h2 {
+    font-size: 2.2rem;
+    margin-bottom: 20px;
+}
+
+.benefits-list {
+    list-style: none;
+    margin-top: 30px;
+}
+
+.benefits-list li {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+}
+
+.text-green {
+    color: var(--brand-green);
+}
+
+.benefits-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.stat-box {
+    background-color: rgba(255,255,255,0.05);
+    border-left: 4px solid var(--brand-green);
+    padding: 25px;
+    border-radius: 0 8px 8px 0;
+}
+
+.stat-box h3 {
+    font-size: 2.5rem;
+    color: var(--brand-green);
+}
+
+/* ==========================================================================
+   RODAPÉ (FOOTER)
+   ========================================================================== */
+.footer {
+    background-color: #1A202C;
+    color: #A0AEC0;
+    padding: 60px 5% 20px 5%;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1.5fr;
+    gap: 50px;
+    margin-bottom: 40px;
+}
+
+.logo-text.color-white {
+    color: var(--white);
+}
+
+.logo-icon.invert {
+    color: var(--brand-green);
+}
+
+.footer-brand p {
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+.footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.footer-links h4, .footer-security h4 {
+    color: var(--white);
+    margin-bottom: 10px;
+}
+
+.footer-links a {
+    color: #A0AEC0;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.footer-links a:hover {
+    color: var(--brand-green);
+}
+
+.footer-security p {
+    font-size: 0.9rem;
+}
+
+.footer-bottom {
+    text-align: center;
+    border-top: 1px solid #2D3748;
+    padding-top: 20px;
+    font-size: 0.8rem;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE (MOBILE)
+   ========================================================================== */
+@media (max-width: 968px) {
+    .navbar {
+        padding: 15px 20px;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+
+    .nav-menu {
+        display: none; /* Controlado pelo JS */
+        flex-direction: column;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background-color: var(--white);
+        padding: 20px;
+        box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+        gap: 15px;
+    }
+
+    .nav-menu.active {
+        display: flex;
+    }
+
+    .nav-auth {
+        display: none; /* Simplificação mobile */
+    }
+
+    .hero-container, .benefits-container, .footer-container {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .hero {
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+}

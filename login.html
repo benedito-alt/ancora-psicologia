@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Âncora Psicologia</title>
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-form-side">
+            <div class="form-wrapper">
+                
+                <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Voltar ao site</a>
+
+                <div class="login-logo">
+                    <i class="fa-solid fa-anchor"></i>
+                    <span>Âncora <span>Psicologia</span></span>
+                </div>
+
+                <div class="login-header">
+                    <h2>Bem-vindo de volta</h2>
+                    <p>Insira suas credenciais para acessar a plataforma integrada.</p>
+                </div>
+
+                <form id="loginForm">
+                    
+                    <div class="input-group">
+                        <label for="userRole">Perfil de Acesso</label>
+                        <div class="input-field">
+                            <i class="fa-solid fa-user-gear icon-input"></i>
+                            <select id="userRole" required>
+                                <option value="" disabled selected>Selecione seu perfil...</option>
+                                <option value="psicologo">Psicólogo(a)</option>
+                                <option value="administrador">Administrador(a) da Clínica</option>
+                                <option value="paciente">Paciente</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="userEmail">E-mail</label>
+                        <div class="input-field">
+                            <i class="fa-solid fa-envelope icon-input"></i>
+                            <input type="email" id="userEmail" placeholder="exemplo@email.com" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="password-label-row">
+                            <label for="userPassword">Senha</label>
+                            <a href="#" class="forgot-link">Esqueceu a senha?</a>
+                        </div>
+                        <div class="input-field">
+                            <i class="fa-solid fa-lock icon-input"></i>
+                            <input type="password" id="userPassword" placeholder="Sua senha secreta" required>
+                            <i class="fa-regular fa-eye id-toggle-password" id="togglePassword"></i>
+                        </div>
+                    </div>
+
+                    <div id="errorMessage" class="error-box"></div>
+
+                    <button type="submit" class="btn-submit">
+                        Entrar no Sistema <i class="fa-solid fa-right-to-bracket"></i>
+                    </button>
+                </form>
+
+                <div class="form-footer">
+                    <p>Sua clínica ainda não usa nosso sistema? <a href="cadastro.html">Experimente Grátis</a></p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="login-design-side">
+            <div class="design-content">
+                <div class="brand-badge">CONFORMIDADE LGPD</div>
+                <h3>Estabilidade na gestão, sigilo absoluto nos dados.</h3>
+                <p>Prontuários eletrônicos com criptografia de ponta, controle de repasse de convênios e agendamentos fluidos para múltiplos profissionais.</p>
+                
+                <div class="mini-features">
+                    <div class="mini-item"><i class="fa-solid fa-circle-check"></i> Controle baseado em papéis</div>
+                    <div class="mini-item"><i class="fa-solid fa-circle-check"></i> Rastreabilidade e logs de auditoria</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/login.js"></script>
+</body>
+</html>

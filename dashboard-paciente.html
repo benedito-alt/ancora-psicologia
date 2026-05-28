@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área do Paciente | Âncora Psicologia</title>
+    
+    <link rel="stylesheet" href="css/paciente.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="navbar" style="position: fixed; top: 0; left: 0; width: 100%; height: 70px; background: #FFF; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 1000;">
+        <div class="logo-container" style="display: flex; align-items: center; gap: 10px; font-weight: bold; color: #2B6CB0; font-size: 1.2rem;">
+            <div class="logo-icon"><i class="fa-solid fa-anchor"></i></div>
+            <span class="logo-text">Âncora <span style="color: #2CB473; font-weight: 400;">Psicologia</span></span>
+        </div>
+        <div class="nav-auth" style="display: flex; align-items: center; gap: 15px;">
+            <span class="nav-link" style="color: #4A5568; font-size: 0.95rem;"><i class="fa-solid fa-circle-user"></i> Olá, Paciente</span>
+            <a href="login.html" class="btn-secondary" style="padding: 6px 15px; border: 1px solid #CBD5E0; border-radius: 6px; color: #2D3748; text-decoration: none; font-size: 0.9rem;" onclick="sessionStorage.clear();">Sair</a>
+        </div>
+    </header>
+
+    <main class="container" style="margin-top: 40px;">
+        
+        <div class="section-header">
+            <h1>Painel do Paciente</h1>
+            <p>Gerencie seus horários, consulte evoluções clínicas e emita seus recibos.</p>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <div class="column-agendamento">
+                
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Agendar Sessão</span>
+                    </div>
+                    <p class="card-subtitle">Escolha o melhor dia e horário disponível na agenda do seu psicólogo associado.</p>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.85rem; font-weight: 600; color: #2B6CB0;">Escolha o Dia:</label>
+                            <input type="date" id="dataAgendamento" class="form-input" style="margin-top: 5px;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.85rem; font-weight: 600; color: #2B6CB0;">Escolha a Hora:</label>
+                            <input type="time" id="horaAgendamento" class="form-input" style="margin-top: 5px;">
+                        </div>
+                    </div>
+
+                    <div id="statusAgendamento" style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 6px; font-weight: 500; font-size: 0.85rem;"></div>
+
+                    <button id="btnAgendar" class="btn-green">
+                        Confirmar Novo Agendamento
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-calendar-check" style="color: #2B6CB0;"></i>
+                        <span>Minhas Consultas</span>
+                    </div>
+                    <p class="card-subtitle">Acompanhe abaixo o status dos seus horários marcados.</p>
+                    
+                    <div id="listaConsultas" style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 10px;">
+                        <p style="color: #A0AEC0; font-style: italic;">Carregando consultas...</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                        <span>Meus Recibos e Comprovantes</span>
+                    </div>
+                    <p class="card-subtitle">Histórico de pagamentos realizados à clínica para fins de declaração e reembolso.</p>
+                    
+                    <div id="listaRecibos" style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 10px;">
+                        <p style="color: #A0AEC0; font-style: italic;">Carregando histórico financeiro...</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="column-historico">
+                
+                <div class="card" style="border-top: 4px solid #2CB473; height: 100%;">
+                    <div class="card-title">
+                        <i class="fa-solid fa-file-medical" style="color: #2CB473;"></i>
+                        <span>Meu Histórico / Evolução</span>
+                    </div>
+                    <p class="card-subtitle">Resumo e orientações deixadas pelos seus psicólogos após os atendimentos.</p>
+                    
+                    <div id="historicoProntuarios" style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 10px;">
+                        <p style="color: #A0AEC0; font-style: italic;">Carregando histórico...</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const dadosLogado = sessionStorage.getItem("usuario_logado");
+        if (!dadosLogado) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        const usuario = JSON.parse(dadosLogado);
+        
+        carregarConsultas(usuario.id);
+        carregarRecibos(usuario.id);
+        carregarHistoricoClinico(usuario.id);
+
+        const btnAgendar = document.getElementById("btnAgendar");
+        const inputData = document.getElementById("dataAgendamento");
+        const inputHora = document.getElementById("horaAgendamento");
+        const statusBox = document.getElementById("statusAgendamento");
+
+        btnAgendar.addEventListener("click", async function() {
+            const dataSel = inputData.value;
+            const horaSel = inputHora.value;
+
+            if (!dataSel || !horaSel) {
+                statusBox.textContent = "Por favor, selecione a data e o horário.";
+                statusBox.style.backgroundColor = "rgba(229, 62, 98, 0.1)";
+                statusBox.style.color = "#E53E3E";
+                statusBox.style.display = "block";
+                return;
+            }
+
+            btnAgendar.disabled = true;
+            btnAgendar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Agendando...';
+
+            try {
+                const response = await fetch('http://localhost:4000/api/agendamento', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paciente_id: usuario.id,
+                        data_consulta: dataSel,
+                        horario_consulta: horaSel
+                    })
+                });
+
+                if (!response.ok) throw new Error('Erro ao agendar.');
+
+                statusBox.innerHTML = '<i class="fa-solid fa-circle-check"></i> Consulta marcada!';
+                statusBox.style.backgroundColor = "rgba(44, 180, 115, 0.1)";
+                statusBox.style.color = "#2CB473";
+                statusBox.style.display = "block";
+
+                inputData.value = "";
+                inputHora.value = "";
+                
+                carregarConsultas(usuario.id);
+
+            } catch (error) {
+                statusBox.textContent = error.message;
+                statusBox.style.display = "block";
+            } finally {
+                btnAgendar.disabled = false;
+                btnAgendar.innerHTML = 'Confirmar Novo Agendamento';
+            }
+        });
+
+        async function carregarConsultas(pacienteId) {
+            const container = document.getElementById("listaConsultas");
+            try {
+                const response = await fetch(`http://localhost:4000/api/agendamentos/${pacienteId}`);
+                const consultas = await response.json();
+
+                if(consultas.length === 0) {
+                    container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhuma consulta agendada.</p>';
+                    return;
+                }
+
+                container.innerHTML = "";
+                consultas.forEach(c => {
+                    const dataFormatada = c.data_consulta.split('-').reverse().join('/');
+                    container.innerHTML += `
+                        <div class="sessao-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div>
+                                <strong>Dia:</strong> ${dataFormatada} às ${c.horario_consulta.substring(0,5)}
+                            </div>
+                            <span style="background: #E2E8F0; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; color: #2B6CB0;">${c.status}</span>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                container.innerHTML = '<p style="color: red;">Erro ao carregar consultas.</p>';
+            }
+        }
+
+        async function carregarRecibos(pacienteId) {
+            const container = document.getElementById("listaRecibos");
+            try {
+                const response = await fetch(`http://localhost:4000/api/financeiro/${pacienteId}`);
+                const recibos = await response.json();
+
+                if(recibos.length === 0) {
+                    container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhum comprovante emitido até o momento.</p>';
+                    return;
+                }
+
+                container.innerHTML = "";
+                recibos.forEach(r => {
+                    const dataTrans = new Date(r.data_transacao).toLocaleDateString('pt-BR');
+                    container.innerHTML += `
+                        <div style="background: rgba(44, 180, 115, 0.05); padding: 12px; border-radius: 6px; border: 1px dashed #2CB473; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div>
+                                <strong style="color: #2D3748;">${r.descricao}</strong><br>
+                                <span style="font-size: 0.8rem; color: #718096;">Emitido em: ${dataTrans}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="color: #2CB473; font-weight: bold;">R$ ${parseFloat(r.valor).toFixed(2)}</span><br>
+                                <a href="#" onclick="alert('Download do PDF simulado com sucesso!')" style="font-size: 0.75rem; color: #2B6CB0; text-decoration: none; font-weight: 600;"><i class="fa-solid fa-download"></i> Baixar PDF</a>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                container.innerHTML = '<p style="color: red;">Erro ao carregar recibos.</p>';
+            }
+        }
+    });
+
+    async function carregarHistoricoClinico(pacienteId) {
+        const container = document.getElementById("historicoProntuarios");
+        try {
+            const response = await fetch(`http://localhost:4000/api/paciente/prontuarios/${pacienteId}`);
+            const prontuarios = await response.json();
+
+            if (prontuarios.length === 0) {
+                container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhuma evolução registrada ainda.</p>';
+                return;
+            }
+
+            container.innerHTML = "";
+            prontuarios.forEach(p => {
+                const dataFmt = new Date(p.criado_em).toLocaleDateString('pt-BR');
+                container.innerHTML += `
+                    <div class="sessao-item" style="margin-bottom: 10px;">
+                        <div class="sessao-header">
+                            <span><i class="fa-regular fa-calendar-days"></i> Sessão em: ${dataFmt}</span>
+                            <span style="background: #EBF8FF; color: #2B6CB0; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">Realizada</span>
+                        </div>
+                        <div class="sessao-conteudo">"${p.conteudo}"</div>
+                    </div>
+                `;
+            });
+        } catch (err) {
+            container.innerHTML = '<p style="color: red;">Erro ao carregar histórico.</p>';
+        }
+    }
+    </script>  
+</body>
+</html>

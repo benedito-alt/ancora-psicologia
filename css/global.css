@@ -1,0 +1,23 @@
+:root {
+    /* Cores extraídas da logo */
+    --brand-blue: #1B4380;       /* Azul da Âncora */
+    --brand-green: #2CB473;      /* Verde Menta */
+    
+    /* Cores de suporte para o layout */
+    --bg-light: #F8F9FA;         /* Fundo Off-White da imagem */
+    --text-dark: #1A202C;        /* Cinza escuro para os textos (melhor que preto puro) */
+    --white: #FFFFFF;            /* Branco puro para os cards */
+}
+
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}

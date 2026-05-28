@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Clínico | Âncora Psicologia</title>
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo-container">
+            <div class="logo-icon"><i class="fa-solid fa-anchor"></i></div>
+            <span class="logo-text">Âncora <span>Psicologia</span></span>
+        </div>
+        <div class="nav-auth">
+            <span class="nav-link"><i class="fa-solid fa-user-doctor"></i> Dr(a). Psicólogo(a)</span>
+            <a href="login.html" class="btn-secondary" style="padding: 5px 15px;">Sair</a>
+        </div>
+    </header>
+
+   <section class="features">
+        <div class="section-header">
+            <span class="hero-content"><span class="badge" style="background-color: #e2e8f0;">ÁREA CLÍNICA RESTRITA</span></span>
+            <h2 style="margin-top: 15px;">Painel de Atendimento do Psicólogo</h2>
+            <p id="nomePsicologo"><i class="fa-solid fa-user-doctor"></i> Carregando profissional...</p>
+        </div>
+
+        <div class="features-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
+            
+            <div class="feature-card" style="text-align: left;">
+                <h3><i class="fa-solid fa-calendar-days" style="color: var(--brand-blue);"></i> Sessões Agendadas</h3>
+                <p style="font-size: 0.85rem; color: #718096; margin-bottom: 15px;">Selecione um paciente abaixo para iniciar o registro da evolução clínica.</p>
+                
+                <div id="listaConsultasClinica" style="display: flex; flex-direction: column; gap: 10px;">
+                    <p style="color: #A0AEC0; font-style: italic;">Buscando agendamentos...</p>
+                </div>
+            </div>
+
+            <div class="feature-card" id="cardProntuario" style="text-align: left; opacity: 0.5; pointer-events: none; border-top: 4px solid var(--brand-blue);">
+                <div class="icon-box"><i class="fa-solid fa-notes-medical"></i></div>
+                <h3>Evolução da Sessão</h3>
+                <p id="pacienteSelecionado" style="font-weight: bold; color: var(--brand-blue); margin-bottom: 15px;">Nenhum paciente selecionado para atendimento.</p>
+                
+                <textarea id="txtProntuario" placeholder="Digite aqui a evolução clínica do paciente, comportamento, queixas principais e direcionamento terapêutico..." style="width: 100%; height: 150px; padding: 12px; border-radius: 6px; border: 1px solid #CBD5E0; resize: vertical; font-family: inherit; margin-bottom: 15px; outline: none;"></textarea>
+                
+                <div id="statusProntuario" style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 6px; font-weight: 500; font-size: 0.9rem;"></div>
+
+                <button id="btnSalvarProntuario" class="btn-cta" style="padding: 12px 20px; width: 100%; background-color: #E53E3E; border: none; color: white; font-weight: bold; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+    <i class="fa-solid fa-circle-check"></i> Encerrar Sessão e Salvar
+</button>
+            </div>
+
+        </div>
+    </section>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. VERIFICA LOGIN
+        const dadosLogado = sessionStorage.getItem("usuario_logado");
+        if (!dadosLogado) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        const usuario = JSON.parse(dadosLogado);
+        document.getElementById("nomePsicologo").innerHTML = `<i class="fa-solid fa-user-doctor"></i> Bem-vindo, Dr(a). <strong>${usuario.nome}</strong>`;
+
+        // Variáveis de controle de atendimento
+        let pacienteIdSelecionado = null;
+
+        // Carrega a lista de sessões na inicialização
+        carregarAgendaClinica();
+
+        // 2. BUSCA AS SESSÕES NO SERVIDOR
+        async function carregarAgendaClinica() {
+            const container = document.getElementById("listaConsultasClinica");
+            try {
+                const response = await fetch('http://localhost:4000/api/psicologo/agendamentos');
+                const agendas = await response.json();
+
+                if (agendas.length === 0) {
+                    container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhum agendamento encontrado no sistema.</p>';
+                    return;
+                }
+
+                container.innerHTML = "";
+                agendas.forEach(a => {
+                    const dataFmt = a.data.split('-').reverse().join('/');
+                    container.innerHTML += `
+                        <div style="background: #F8F9FA; padding: 12px; border-radius: 6px; border-left: 4px solid #4299E1; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: #2D3748;">${a.paciente_nome}</strong><br>
+                                <span style="font-size: 0.8rem; color: #718096;"><i class="fa-regular fa-clock"></i> ${dataFmt} às ${a.hora.substring(0,5)}</span>
+                            </div>
+                            <button onclick="selecionarPaciente('${a.paciente_id}', '${a.paciente_nome}')" style="background: var(--brand-blue); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">
+                                Atender
+                            </button>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                container.innerHTML = '<p style="color: red;">Erro ao carregar agenda.</p>';
+            }
+        }
+
+        // 3. ATIVA O CARD DE PRONTUÁRIO PARA O PACIENTE CLICADO
+        window.selecionarPaciente = function(id, nome) {
+            pacienteIdSelecionado = id;
+            const card = document.getElementById("cardProntuario");
+            card.style.opacity = "1";
+            card.style.pointerEvents = "auto";
+            document.getElementById("pacienteSelecionado").innerHTML = `<i class="fa-solid fa-user"></i> Atendendo agora: <span style="color: var(--brand-green);">${nome}</span>`;
+            document.getElementById("txtProntuario").focus();
+        };
+
+        // 4. SALVA O PRONTUÁRIO VINCULADO AO PACIENTE
+        const btnSalvar = document.getElementById("btnSalvarProntuario");
+        const txtProntuario = document.getElementById("txtProntuario");
+        const statusProntuario = document.getElementById("statusProntuario");
+
+        btnSalvar.addEventListener("click", async function() {
+            const conteudo = txtProntuario.value.trim();
+
+            if (!conteudo || !pacienteIdSelecionado) {
+                statusProntuario.textContent = "Por favor, digite a evolução antes de salvar.";
+                statusProntuario.style.backgroundColor = "rgba(229, 62, 98, 0.1)";
+                statusProntuario.style.color = "#E53E3E";
+                statusProntuario.style.display = "block";
+                return;
+            }
+
+            btnSalvar.disabled = true;
+            btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gravando prontuário...';
+
+            try {
+                const response = await fetch('http://localhost:4000/api/prontuario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        psicologo_id: usuario.id,
+                        paciente_id: pacienteIdSelecionado,
+                        conteudo: conteudo
+                    })
+                });
+
+                if (!response.ok) throw new Error('Erro ao salvar prontuário.');
+
+                statusProntuario.innerHTML = '<i class="fa-solid fa-circle-check"></i> Sessão encerrada e prontuário salvo!';
+                statusProntuario.style.backgroundColor = "rgba(44, 180, 115, 0.1)";
+                statusProntuario.style.color = "#2CB473";
+                statusProntuario.style.display = "block";
+                
+                // Limpa o campo de texto
+                txtProntuario.value = "";
+
+                // RESETA O CARD DA DIREITA (Bloqueia novamente até escolher outro paciente)
+                pacienteIdSelecionado = null;
+                document.getElementById("pacienteSelecionado").innerHTML = `Nenhum paciente selecionado para atendimento.`;
+
+                const card = document.getElementById("cardProntuario");
+                card.style.opacity = "0.5";
+                card.style.pointerEvents = "none";
+
+                // RECARREGA A LISTA DA ESQUERDA (Faz o paciente atendido SUMIR da tela na hora!)
+                carregarAgendaClinica();
+
+           } catch (error) {
+        statusProntuario.textContent = error.message;
+        statusProntuario.style.backgroundColor = "rgba(229, 62, 98, 0.1)";
+        statusProntuario.style.color = "#E53E3E";
+        statusProntuario.style.display = "block";
+    } finally {
+        btnSalvar.disabled = false;
+        btnSalvar.innerHTML = '<i class="fa-solid fa-circle-check"></i> Encerrar Sessão e Salvar';
+    }
+        });
+    });
+</script>
+</body>
+</html>

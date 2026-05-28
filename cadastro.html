@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Conta | Âncora Psicologia</title>
+    <link rel="stylesheet" href="css/cadastro.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="signup-container">
+        <div class="signup-design-side">
+            <div class="design-content">
+                <div class="brand-badge">TESTE GRATUITO por 14 dias</div>
+                <h3>Modernize sua prática clínica hoje mesmo.</h3>
+                <p>Junte-se à Âncora Psicologia e experimente uma gestão sem papel, com total controle financeiro e segurança de dados de nível bancário.</p>
+                
+                <div class="benefit-steps">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-text"><strong>Crie sua conta</strong> em menos de 2 minutos.</div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-text"><strong>Configure seus horários</strong> e salas na agenda.</div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-text"><strong>Convide pacientes</strong> e comece a evoluir prontuários.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="signup-form-side">
+            <div class="form-wrapper">
+                
+                <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Voltar ao site</a>
+
+                <div class="signup-logo">
+                    <i class="fa-solid fa-anchor"></i>
+                    <span>Âncora <span>Psicologia</span></span>
+                </div>
+
+                <div class="signup-header">
+                    <h2>Comece agora</h2>
+                    <p>Preencha os dados abaixo para criar sua conta na plataforma.</p>
+                </div>
+
+                <form id="signupForm">
+                    <div class="input-group">
+                        <label for="regName">Nome Completo</label>
+                        <div class="input-field">
+                            <i class="fa-solid fa-user icon-input"></i>
+                            <input type="text" id="regName" placeholder="Seu nome aqui" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="regRole">Eu sou...</label>
+                        <div class="input-field">
+                            <i class="fa-solid fa-user-tag icon-input"></i>
+                            <select id="regRole" required>
+                                <option value="" disabled selected>Selecione seu perfil...</option>
+                                <option value="psicologo">Psicólogo(a) / Profissional</option>
+                                <option value="paciente">Paciente</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="regEmail">E-mail Profissional ou Pessoal</label>
+                        <div class="input-field">
+                            <i class="fa-solid fa-envelope icon-input"></i>
+                            <input type="email" id="regEmail" placeholder="exemplo@email.com" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="regPassword">Criar Senha</label>
+                        <div class="input-field">
+                            <i class="fa-solid fa-lock icon-input"></i>
+                            <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="regPasswordConfirm">Confirmar Senha</label>
+                        <div class="input-field">
+                            <i class="fa-solid fa-shield-cat icon-input"></i>
+                            <input type="password" id="regPasswordConfirm" placeholder="Repita a senha" required>
+                        </div>
+                    </div>
+
+                    <div id="statusMessage" class="status-box"></div>
+
+                    <button type="submit" class="btn-submit">
+                        Concluir Cadastro <i class="fa-solid fa-circle-check"></i>
+                    </button>
+                </form>
+
+                <div class="form-footer">
+                    <p>Já possui uma conta? <a href="login.html">Faça Login</a></p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/cadastro.js"></script>
+</body>
+</html>
