@@ -99,7 +99,6 @@ app.post('/api/prontuario', async (req, res) => {
         return res.status(400).json({ error: 'Dados insuficientes para encerrar.' });
     }
 
-    // Define um valor padrão caso o psicólogo não envie um valor específico
     const valorFinal = valor_consulta || 150.00; 
 
     try {
@@ -125,21 +124,20 @@ app.post('/api/prontuario', async (req, res) => {
             return res.status(400).json({ error: 'Falha ao salvar a evolução clínica.' });
         }
 
-        // 3. NOVO: Gera a cobrança na tabela financeira como "Pendente"
+        // 3. Gera a cobrança na tabela financeira como "Pendente"
         const { error: errFinanceiro } = await supabase
             .from('financeiro')
             .insert([{
                 paciente_id: paciente_id,
                 descricao: 'Sessão de Psicoterapia Realizada',
                 valor: valorFinal,
-                tipo: 'Receita', // Mantendo o padrão que seu Admin lê
-                status: 'Pendente', // Novo campo para o controle do botão pagar
+                tipo: 'Receita', 
+                status: 'Pendente', 
                 data_transacao: new Date().toISOString().split('T')[0]
             }]);
 
         if (errFinanceiro) {
             console.error("❌ Erro ao gerar lançamento financeiro:", errFinanceiro.message);
-            // Não vamos derrubar a rota se o financeiro falhar, mas avisamos no log
         }
 
         console.log("✅ Sucesso: Consulta realizada, Prontuário salvo e Cobrança gerada!");
@@ -207,7 +205,7 @@ app.get('/api/agendamentos/:paciente_id', async (req, res) => {
 });
 
 // ==========================================================================
-// ROTA 6: LISTAR RECIBOS/PAGAMENTOS DO PACIENTE
+// ROTA 6: LISTAR RECIBOS/PAGAMENTOS DO PACIENTE (CORRIGIDO PARA 'Receita')
 // ==========================================================================
 app.get('/api/financeiro/:paciente_id', async (req, res) => {
     const { paciente_id } = req.params;
@@ -217,7 +215,7 @@ app.get('/api/financeiro/:paciente_id', async (req, res) => {
             .from('financeiro')
             .select('*')
             .eq('paciente_id', paciente_id)
-            .eq('tipo', 'receita') 
+            .eq('tipo', 'Receita') // CORRIGIDO: 'Receita' com R maiúsculo igual à inserção
             .order('data_transacao', { ascending: false });
 
         if (error) return res.status(400).json({ error: error.message });
@@ -329,6 +327,7 @@ app.get('/api/admin/financeiro', async (req, res) => {
         return res.status(500).json({ error: 'Erro interno ao gerar relatório financeiro.' });
     }
 });
+
 // ==========================================================================
 // ROTA 10: QUITAR PAGAMENTO (Paciente clicando em Pagar)
 // ==========================================================================
@@ -347,8 +346,9 @@ app.put('/api/financeiro/pagar/:id', async (req, res) => {
         return res.status(500).json({ error: 'Erro ao processar pagamento.' });
     }
 });
+
 // ==========================================================================
-// INICIALIZAÇÃO DO SERVIDOR (Sempre usando variáveis diretas)
+// INICIALIZAÇÃO DO SERVIDOR 
 // ==========================================================================
 app.listen(process.env.PORT || 4000, () => {
     console.log("🚀 Servidor rodando lindamente no ambiente em tempo real!");
