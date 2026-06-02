@@ -322,5 +322,5 @@ app.get('/api/admin/financeiro', async (req, res) => {
 // INICIALIZAÇÃO DO SERVIDOR (Sempre na última linha do arquivo)
 // ==========================================================================
 app.listen(process.env.PORT || 4000, () => {
-    console.log(`🚀 Servidor rodando lindamente na porta ${process.env.PORT || 4000}`);
+    console.log(`🚀 Servidor rodando com sucesso!`);
 });
