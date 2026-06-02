@@ -26,13 +26,16 @@ document.addEventListener("DOMContentLoaded", function () {
             errorMessage.style.display = "none";
             errorMessage.textContent = "";
 
-            const submitBtn = loginForm.querySelector(".btn-submit");
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando credenciais...';
+            // Busca pelo botão de envio (suporta .btn-submit ou a tag button padrão do formulário)
+            const submitBtn = loginForm.querySelector(".btn-submit") || loginForm.querySelector("button[type='submit']");
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando credenciais...';
+            }
 
             try {
-                // REQUISIÇÃO REAL PARA O SEU SERVIDOR (Porta 4000)
-                const response = await fetch('https://ancora-backend-76ue.onrender.com/api/agendamento', {
+                // CORREÇÃO DA ROTA: Alterado de /api/agendamento para /api/login
+                const response = await fetch('https://ancora-backend-76ue.onrender.com/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -67,8 +70,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 errorMessage.textContent = error.message;
                 errorMessage.style.display = "block";
                 
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Entrar no Sistema <i class="fa-solid fa-right-to-bracket"></i>';
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Entrar no Sistema <i class="fa-solid fa-right-to-bracket"></i>';
+                }
             }
         });
     }
