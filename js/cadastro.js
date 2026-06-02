@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             try {
                 // REQUISIÇÃO REAL PARA O SEU SERVIDOR (Porta 4000)
-                const response = await fetch('http://localhost:4000/api/cadastro', {
+                const response = await fetch('https://ancora-backend-76ue.onrender.com/api/cadastro', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
