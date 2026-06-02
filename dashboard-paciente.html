@@ -182,37 +182,76 @@
 
         // 4. BUSCAR RECIBOS DO PACIENTE (Rota /api/financeiro/:paciente_id)
         async function carregarRecibos(pacienteId) {
-            const container = document.getElementById("listaRecibos");
-            try {
-                const response = await fetch(`https://ancora-backend-76ue.onrender.com/api/financeiro/${pacienteId}`);
-                const recibos = await response.json();
+    const container = document.getElementById("listaRecibos");
+    try {
+        const response = await fetch(`https://ancora-backend-76ue.onrender.com/api/financeiro/${pacienteId}`);
+        const recibos = await response.json();
 
-                if(!response.ok || recibos.length === 0) {
-                    container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhum comprovante emitido até o momento.</p>';
-                    return;
-                }
-
-                container.innerHTML = "";
-                recibos.forEach(r => {
-                    const dataTrans = r.data_transacao ? r.data_transacao.split('-').reverse().join('/') : new Date().toLocaleDateString('pt-BR');
-                    container.innerHTML += `
-                        <div style="background: rgba(44, 180, 115, 0.05); padding: 12px; border-radius: 6px; border: 1px dashed var(--brand-green); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <div>
-                                <strong style="color: #2D3748;">${r.descricao || 'Recibo de Consulta'}</strong><br>
-                                <span style="font-size: 0.8rem; color: #718096;">Emitido em: ${dataTrans}</span>
-                            </div>
-                            <div style="text-align: right;">
-                                <span style="color: var(--brand-green); font-weight: bold;">R$ ${parseFloat(r.valor).toFixed(2)}</span><br>
-                                <a href="#" onclick="alert('Download do PDF gerado com sucesso!')" style="font-size: 0.75rem; color: var(--brand-blue); text-decoration: none; font-weight: 600;"><i class="fa-solid fa-download"></i> Baixar PDF</a>
-                            </div>
-                        </div>
-                    `;
-                });
-            } catch (err) {
-                container.innerHTML = '<p style="color: red;">Erro ao carregar recibos.</p>';
-            }
+        if(!response.ok || recibos.length === 0) {
+            container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhum comprovante emitido até o momento.</p>';
+            return;
         }
 
+        container.innerHTML = "";
+        recibos.forEach(r => {
+            const dataTrans = r.data_transacao ? r.data_transacao.split('-').reverse().join('/') : new Date().toLocaleDateString('pt-BR');
+            
+            // Define o botão ou status com base no campo da tabela
+            let acaoBotao = '';
+            if (r.status === 'Pendente') {
+                acaoBotao = `
+                    <button onclick="efetuarPagamento(${r.id})" style="background: #E53E3E; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.75rem; margin-top: 5px;">
+                        <i class="fa-solid fa-credit-card"></i> Pagar Consulta
+                    </button>
+                `;
+            } else {
+                acaoBotao = `
+                    <span style="color: #2CB473; font-weight: bold; font-size: 0.8rem;"><i class="fa-solid fa-circle-check"></i> Pago</span><br>
+                    <a href="#" onclick="alert('Download do PDF gerado com sucesso!')" style="font-size: 0.75rem; color: var(--brand-blue); text-decoration: none; font-weight: 600;"><i class="fa-solid fa-download"></i> Baixar PDF</a>
+                `;
+            }
+
+            container.innerHTML += `
+                <div style="background: rgba(44, 180, 115, 0.05); padding: 12px; border-radius: 6px; border: 1px dashed var(--brand-green); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div>
+                        <strong style="color: #2D3748;">${r.descricao || 'Recibo de Consulta'}</strong><br>
+                        <span style="font-size: 0.8rem; color: #718096;">Data: ${dataTrans}</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="color: var(--brand-green); font-weight: bold;">R$ ${parseFloat(r.valor).toFixed(2)}</span><br>
+                        ${acaoBotao}
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) {
+        container.innerHTML = '<p style="color: red;">Erro ao carregar recibos.</p>';
+    }
+}
+
+// NOVA FUNÇÃO NO HTML DO PACIENTE PARA PROCESSAR O CLIQUE DO BOTÃO
+async function efetuarPagamento(idLancamento) {
+    if(!confirm("Deseja confirmar o pagamento desta consulta?")) return;
+    
+    try {
+        const response = await fetch(`https://ancora-backend-76ue.onrender.com/api/financeiro/pagar/${idLancamento}`, {
+            method: 'PUT'
+        });
+        
+        if(response.ok) {
+            alert("Pagamento realizado com sucesso! ⚓");
+            // Atualiza a lista automaticamente na tela do paciente
+            const dadosLogado = sessionStorage.getItem("usuario_logado");
+            const usuario = JSON.parse(dadosLogado);
+            carregarRecibos(usuario.id);
+        } else {
+            alert("Erro ao processar o pagamento.");
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Erro de conexão com o servidor.");
+    }
+}
         // 5. BUSCAR EVOLUÇÕES DO PACIENTE (Rota /api/paciente/prontuarios/:paciente_id)
         async function carregarHistoricoClinico(pacienteId) {
             const container = document.getElementById("historicoProntuarios");

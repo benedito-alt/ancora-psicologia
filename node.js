@@ -88,10 +88,10 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ==========================================================================
-// ROTA 3: SALVAR PRONTUÁRIO
+// ROTA 3: SALVAR PRONTUÁRIO E GERAR COBRANÇA AUTOMÁTICA
 // ==========================================================================
 app.post('/api/prontuario', async (req, res) => {
-    const { psicologo_id, paciente_id, conteudo } = req.body;
+    const { psicologo_id, paciente_id, conteudo, valor_consulta } = req.body;
 
     console.log("📥 Processando encerramento de sessão para o paciente:", paciente_id);
 
@@ -99,7 +99,11 @@ app.post('/api/prontuario', async (req, res) => {
         return res.status(400).json({ error: 'Dados insuficientes para encerrar.' });
     }
 
+    // Define um valor padrão caso o psicólogo não envie um valor específico
+    const valorFinal = valor_consulta || 150.00; 
+
     try {
+        // 1. Atualiza o status do agendamento
         const { error: errUpdate } = await supabase
             .from('agendamentos')
             .update({ status: 'Realizada' })
@@ -111,6 +115,7 @@ app.post('/api/prontuario', async (req, res) => {
             return res.status(400).json({ error: 'Falha ao mudar status da consulta: ' + errUpdate.message });
         }
 
+        // 2. Insere a evolução/prontuário
         const { error: errProntuario } = await supabase
             .from('prontuarios')
             .insert([{ psicologo_id, paciente_id, conteudo }]);
@@ -120,8 +125,25 @@ app.post('/api/prontuario', async (req, res) => {
             return res.status(400).json({ error: 'Falha ao salvar a evolução clínica.' });
         }
 
-        console.log("✅ Sucesso: Consulta alterada para Realizada e Prontuário Salvo!");
-        return res.status(201).json({ message: 'Sessão encerrada com sucesso!' });
+        // 3. NOVO: Gera a cobrança na tabela financeira como "Pendente"
+        const { error: errFinanceiro } = await supabase
+            .from('financeiro')
+            .insert([{
+                paciente_id: paciente_id,
+                descricao: 'Sessão de Psicoterapia Realizada',
+                valor: valorFinal,
+                tipo: 'Receita', // Mantendo o padrão que seu Admin lê
+                status: 'Pendente', // Novo campo para o controle do botão pagar
+                data_transacao: new Date().toISOString().split('T')[0]
+            }]);
+
+        if (errFinanceiro) {
+            console.error("❌ Erro ao gerar lançamento financeiro:", errFinanceiro.message);
+            // Não vamos derrubar a rota se o financeiro falhar, mas avisamos no log
+        }
+
+        console.log("✅ Sucesso: Consulta realizada, Prontuário salvo e Cobrança gerada!");
+        return res.status(201).json({ message: 'Sessão encerrada e cobrança gerada com sucesso!' });
 
     } catch (err) {
         console.error("❌ Erro crítico inesperado:", err);
@@ -307,7 +329,24 @@ app.get('/api/admin/financeiro', async (req, res) => {
         return res.status(500).json({ error: 'Erro interno ao gerar relatório financeiro.' });
     }
 });
+// ==========================================================================
+// ROTA 10: QUITAR PAGAMENTO (Paciente clicando em Pagar)
+// ==========================================================================
+app.put('/api/financeiro/pagar/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { data, error } = await supabase
+            .from('financeiro')
+            .update({ status: 'Pago' })
+            .eq('id', id)
+            .select();
 
+        if (error) return res.status(400).json({ error: error.message });
+        return res.status(200).json({ message: 'Pagamento processado com sucesso!', data });
+    } catch (err) {
+        return res.status(500).json({ error: 'Erro ao processar pagamento.' });
+    }
+});
 // ==========================================================================
 // INICIALIZAÇÃO DO SERVIDOR (Sempre usando variáveis diretas)
 // ==========================================================================

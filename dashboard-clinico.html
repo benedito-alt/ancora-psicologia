@@ -141,9 +141,10 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        psicologo_id: usuario.id,
-                        paciente_id: pacienteIdSelecionado,
-                        conteudo: conteudo
+                      psicologo_id: usuario.id,
+                      paciente_id: pacienteSelecionadoId,
+                      conteudo: documentoTextarea.value,
+                    valor_consulta: 150.00 // Define o valor da sessão aqui
                     })
                 });
 
