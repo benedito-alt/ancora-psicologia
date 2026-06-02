@@ -3,14 +3,14 @@
 // ==========================================================================
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
-const cors = require('cors'); // Instale se necessário com: npm install cors
+const cors = require('cors'); 
 require('dotenv').config();
 
 const app = express();
 
 // Middlewares obrigatórios para processar dados de formulários e JSON
 app.use(express.json());
-app.use(cors()); // Permite que o frontend converse com o backend sem erros de segurança
+app.use(cors()); 
 
 // Inicialização do cliente do Supabase usando as variáveis do .env
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -28,20 +28,17 @@ app.get('/', (req, res) => {
 app.post('/api/cadastro', async (req, res) => {
     const { nome, email, senha, perfil } = req.body;
 
-    // Validação básica de segurança
     if (!nome || !email || !senha || !perfil) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
     }
 
     try {
-        // Insere o novo usuário direto na tabela que criamos no Supabase
         const { data, error } = await supabase
             .from('usuarios')
-            .insert([{ nome, email, senha, perfil }]) // Em produção, a senha deve ser criptografada (ex: bcrypt)
+            .insert([{ nome, email, senha, perfil }]) 
             .select();
 
         if (error) {
-            // Se o e-mail já existir, o Supabase retorna um erro de duplicidade
             if (error.code === '23505') {
                 return res.status(400).json({ error: 'Este e-mail já está cadastrado.' });
             }
@@ -65,20 +62,18 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        // Busca o usuário verificando e-mail, senha e o papel de acesso
         const { data, error } = await supabase
             .from('usuarios')
             .select('*')
             .eq('email', email)
             .eq('senha', senha)
             .eq('perfil', perfil)
-            .single(); // Espera encontrar apenas um registro exato
+            .single(); 
 
         if (error || !data) {
             return res.status(401).json({ error: 'Credenciais inválidas ou perfil incorreto.' });
         }
 
-        // Se encontrou, retorna os dados permitindo o login
         return res.status(200).json({
             message: 'Autenticado com sucesso!',
             usuario: {
@@ -93,7 +88,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ==========================================================================
-// ROTA 3: SALVAR PRONTUÁRIO (Atualizada para Debug)
+// ROTA 3: SALVAR PRONTUÁRIO
 // ==========================================================================
 app.post('/api/prontuario', async (req, res) => {
     const { psicologo_id, paciente_id, conteudo } = req.body;
@@ -105,7 +100,6 @@ app.post('/api/prontuario', async (req, res) => {
     }
 
     try {
-        // 1. ATUALIZA O STATUS DO AGENDAMENTO PARA 'Realizada' PRIMEIRO
         const { error: errUpdate } = await supabase
             .from('agendamentos')
             .update({ status: 'Realizada' })
@@ -117,7 +111,6 @@ app.post('/api/prontuario', async (req, res) => {
             return res.status(400).json({ error: 'Falha ao mudar status da consulta: ' + errUpdate.message });
         }
 
-        // 2. SALVA O PRONTUÁRIO CLÍNICO
         const { error: errProntuario } = await supabase
             .from('prontuarios')
             .insert([{ psicologo_id, paciente_id, conteudo }]);
@@ -202,7 +195,7 @@ app.get('/api/financeiro/:paciente_id', async (req, res) => {
             .from('financeiro')
             .select('*')
             .eq('paciente_id', paciente_id)
-            .eq('tipo', 'receita') // Mostra o que ele pagou para a clínica
+            .eq('tipo', 'receita') 
             .order('data_transacao', { ascending: false });
 
         if (error) return res.status(400).json({ error: error.message });
@@ -217,7 +210,6 @@ app.get('/api/financeiro/:paciente_id', async (req, res) => {
 // ==========================================================================
 app.get('/api/psicologo/agendamentos', async (req, res) => {
     try {
-        // O filtro .eq('status', 'Agendado') garante que sessões 'Realizadas' sumam da lista!
         const { data, error } = await supabase
             .from('agendamentos')
             .select(`
@@ -249,7 +241,7 @@ app.get('/api/psicologo/agendamentos', async (req, res) => {
 });
 
 // ==========================================================================
-// ROTA 8: BUSCAR PRONTUÁRIOS DO PACIENTE LOGADO (Versão Corrigida)
+// ROTA 8: BUSCAR PRONTUÁRIOS DO PACIENTE LOGADO
 // ==========================================================================
 app.get('/api/paciente/prontuarios/:paciente_id', async (req, res) => {
     const { paciente_id } = req.params;
@@ -262,7 +254,6 @@ app.get('/api/paciente/prontuarios/:paciente_id', async (req, res) => {
 
         if (error) return res.status(400).json({ error: error.message });
 
-        // Mapeia os dados garantindo que o frontend sempre receba 'criado_em' preenchido
         const formatados = data.map(p => ({
             id: p.id,
             conteudo: p.conteudo,
@@ -276,11 +267,10 @@ app.get('/api/paciente/prontuarios/:paciente_id', async (req, res) => {
 });
 
 // ==========================================================================
-// ROTA 9: RELATÓRIO FINANCEIRO CONSOLIDADO (Versão Tolerante a Erros)
+// ROTA 9: RELATÓRIO FINANCEIRO CONSOLIDADO
 // ==========================================================================
 app.get('/api/admin/financeiro', async (req, res) => {
     try {
-        // Removemos o .order fixo daqui para evitar o erro de coluna inexistente
         const { data, error } = await supabase
             .from('financeiro')
             .select('*');
@@ -310,7 +300,7 @@ app.get('/api/admin/financeiro', async (req, res) => {
                 despesas: totalDespesas.toFixed(2),
                 saldo: saldoLiquido.toFixed(2)
             },
-            lancamentos: data // O frontend vai renderizar os dados perfeitamente
+            lancamentos: data 
         });
     } catch (err) {
         console.error("❌ Erro interno na rota financeira:", err);
@@ -319,8 +309,8 @@ app.get('/api/admin/financeiro', async (req, res) => {
 });
 
 // ==========================================================================
-// INICIALIZAÇÃO DO SERVIDOR (Sempre na última linha do arquivo)
+// INICIALIZAÇÃO DO SERVIDOR (Sempre usando variáveis diretas)
 // ==========================================================================
 app.listen(process.env.PORT || 4000, () => {
-    console.log(`🚀 Servidor rodando com sucesso!`);
+    console.log("🚀 Servidor rodando lindamente no ambiente em tempo real!");
 });
