@@ -7,8 +7,6 @@ const cors = require('cors'); // Instale se necessário com: npm install cors
 require('dotenv').config();
 
 const app = express();
-// DECLARAÇÃO ÚNICA DA PORTA (Prioriza a porta que o Render escolher ou usa a 4000)
-const PORT = process.env.PORT || 4000;
 
 // Middlewares obrigatórios para processar dados de formulários e JSON
 app.use(express.json());
@@ -323,6 +321,6 @@ app.get('/api/admin/financeiro', async (req, res) => {
 // ==========================================================================
 // INICIALIZAÇÃO DO SERVIDOR (Sempre na última linha do arquivo)
 // ==========================================================================
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando lindamente na porta ${PORT}`);
+app.listen(process.env.PORT || 4000, () => {
+    console.log(`🚀 Servidor rodando lindamente na porta ${process.env.PORT || 4000}`);
 });
