@@ -7,7 +7,8 @@ const cors = require('cors'); // Instale se necessário com: npm install cors
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// DECLARAÇÃO ÚNICA DA PORTA (Prioriza a porta que o Render escolher ou usa a 4000)
+const PORT = process.env.PORT || 4000;
 
 // Middlewares obrigatórios para processar dados de formulários e JSON
 app.use(express.json());
@@ -92,6 +93,7 @@ app.post('/api/login', async (req, res) => {
         return res.status(500).json({ error: 'Erro interno no servidor.' });
     }
 });
+
 // ==========================================================================
 // ROTA 3: SALVAR PRONTUÁRIO (Atualizada para Debug)
 // ==========================================================================
@@ -135,6 +137,7 @@ app.post('/api/prontuario', async (req, res) => {
         return res.status(500).json({ error: 'Erro interno ao processar encerramento.' });
     }
 });
+
 // ==========================================================================
 // ROTA 4: CRIAR NOVO AGENDAMENTO (Exclusivo do Paciente)
 // ==========================================================================
@@ -169,6 +172,7 @@ app.post('/api/agendamento', async (req, res) => {
         return res.status(500).json({ error: 'Erro interno ao agendar.' });
     }
 });
+
 // ==========================================================================
 // ROTA 5: LISTAR AGENDAMENTOS DO PACIENTE
 // ==========================================================================
@@ -210,11 +214,6 @@ app.get('/api/financeiro/:paciente_id', async (req, res) => {
     }
 });
 
-// Inicializa o servidor na porta configurada
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando na porta ${PORT}`);
-});
 // ==========================================================================
 // ROTA 7: LISTAR AGENDAMENTOS ATIVOS (Para o Painel do Psicólogo)
 // ==========================================================================
@@ -250,6 +249,7 @@ app.get('/api/psicologo/agendamentos', async (req, res) => {
         return res.status(500).json({ error: 'Erro ao buscar agenda clínica.' });
     }
 });
+
 // ==========================================================================
 // ROTA 8: BUSCAR PRONTUÁRIOS DO PACIENTE LOGADO (Versão Corrigida)
 // ==========================================================================
@@ -276,6 +276,7 @@ app.get('/api/paciente/prontuarios/:paciente_id', async (req, res) => {
         return res.status(500).json({ error: 'Erro interno ao buscar histórico clínico.' });
     }
 });
+
 // ==========================================================================
 // ROTA 9: RELATÓRIO FINANCEIRO CONSOLIDADO (Versão Tolerante a Erros)
 // ==========================================================================
@@ -317,4 +318,11 @@ app.get('/api/admin/financeiro', async (req, res) => {
         console.error("❌ Erro interno na rota financeira:", err);
         return res.status(500).json({ error: 'Erro interno ao gerar relatório financeiro.' });
     }
+});
+
+// ==========================================================================
+// INICIALIZAÇÃO DO SERVIDOR (Sempre na última linha do arquivo)
+// ==========================================================================
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando lindamente na porta ${PORT}`);
 });
