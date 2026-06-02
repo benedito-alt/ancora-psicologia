@@ -72,35 +72,35 @@
         // Carrega a lista de sessões na inicialização
         carregarAgendaClinica();
 
-        // 2. BUSCA AS SESSÕES NO SERVIDOR (Rota de listagem global corrigida)
+        // 2. BUSCA AS SESSÕES NO SERVIDOR (URL Corrigida para a Rota 7 do Backend)
         async function carregarAgendaClinica() {
             const container = document.getElementById("listaConsultasClinica");
             try {
-                const response = await fetch('https://ancora-backend-76ue.onrender.com/api/agendamento/lista');
+                const response = await fetch('https://ancora-backend-76ue.onrender.com/api/psicologo/agendamentos');
                 const agendas = await response.json();
 
                 if (!response.ok || agendas.length === 0) {
-                    container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhum agendamento encontrado no sistema.</p>';
+                    container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhum agendamento ativo encontrado.</p>';
                     return;
                 }
 
                 container.innerHTML = "";
                 agendas.forEach(a => {
-                    const dataFmt = a.data_consulta.split('-').reverse().join('/');
+                    const dataFmt = a.data.split('-').reverse().join('/');
                     container.innerHTML += `
                         <div style="background: #F8F9FA; padding: 12px; border-radius: 6px; border-left: 4px solid #4299E1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                             <div>
-                                <strong style="color: #2D3748;">${a.paciente_nome || 'Paciente Cadastrado'}</strong><br>
-                                <span style="font-size: 0.8rem; color: #718096;"><i class="fa-regular fa-clock"></i> ${dataFmt} às ${a.horario_consulta.substring(0,5)}</span>
+                                <strong style="color: #2D3748;">${a.paciente_nome}</strong><br>
+                                <span style="font-size: 0.8rem; color: #718096;"><i class="fa-regular fa-clock"></i> ${dataFmt} às ${a.hora.substring(0,5)}</span>
                             </div>
-                            <button onclick="selecionarPaciente('${a.paciente_id}', '${a.paciente_nome || 'Paciente'}')" style="background: var(--brand-blue); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">
+                            <button onclick="selecionarPaciente('${a.paciente_id}', '${a.paciente_nome}')" style="background: var(--brand-blue); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">
                                 Atender
                             </button>
                         </div>
                     `;
                 });
             } catch (err) {
-                container.innerHTML = '<p style="color: red;">Erro ao carregar agenda.</p>';
+                container.innerHTML = '<p style="color: red;">Erro ao carregar agenda clínica.</p>';
             }
         }
 
@@ -117,7 +117,7 @@
             statusProntuario.style.display = "none";
         };
 
-        // 4. SALVA O PRONTUÁRIO VINCULADO AO PACIENTE
+        // 4. SALVA O PRONTUÁRIO VINCULADO AO PACIENTE (URL Corrigida para a Rota 3 do Backend)
         const btnSalvar = document.getElementById("btnSalvarProntuario");
         const txtProntuario = document.getElementById("txtProntuario");
         const statusProntuario = document.getElementById("statusProntuario");
@@ -137,7 +137,7 @@
             btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gravando prontuário...';
 
             try {
-                const response = await fetch('https://ancora-backend-76ue.onrender.com/api/agendamento/prontuario', {
+                const response = await fetch('https://ancora-backend-76ue.onrender.com/api/prontuario', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -147,7 +147,9 @@
                     })
                 });
 
-                if (!response.ok) throw new Error('Erro ao salvar prontuário.');
+                const dados = await response.json();
+
+                if (!response.ok) throw new Error(dados.error || 'Erro ao salvar prontuário.');
 
                 statusProntuario.innerHTML = '<i class="fa-solid fa-circle-check"></i> Sessão encerrada e prontuário salvo!';
                 statusProntuario.style.backgroundColor = "rgba(44, 180, 115, 0.1)";
