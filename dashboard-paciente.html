@@ -77,7 +77,7 @@
     </div>
 
     <script>
-    // Executado ao carregar a página
+  // Executado ao carregar a página
 document.addEventListener("DOMContentLoaded", function() {
     const dadosLogado = sessionStorage.getItem("usuario_logado");
     if (!dadosLogado) {
@@ -196,10 +196,11 @@ async function carregarRecibos(pacienteId) {
             const dataTrans = r.data_transacao ? r.data_transacao.split('-').reverse().join('/') : new Date().toLocaleDateString('pt-BR');
             
             let acaoBotao = '';
-            // Valida o status vindo do banco (Garante compatibilidade com "Pendente")
+            // Valida o status vindo do banco de dados
             if (r.status === 'Pendente') {
+                // 💡 CORREÇÃO AQUI: adicionado aspas simples '${r.id}' no onclick para o HTML aceitar o ID text/UUID
                 acaoBotao = `
-                    <button onclick="efetuarPagamento(${r.id})" style="background: #2CB473; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.75rem; margin-top: 5px; transition: background 0.2s;">
+                    <button onclick="efetuarPagamento('${r.id}')" style="background: #2CB473; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.75rem; margin-top: 5px;">
                         <i class="fa-solid fa-credit-card"></i> Pagar Consulta
                     </button>
                 `;
@@ -241,7 +242,7 @@ async function efectuarPagamento(idLancamento) {
             alert("Pagamento realizado com sucesso! ⚓");
             const dadosLogado = sessionStorage.getItem("usuario_logado");
             const usuario = JSON.parse(dadosLogado);
-            carregarRecibos(usuario.id); // Recarrega a lista para mudar para "Pago" em tempo real
+            carregarRecibos(usuario.id); // Atualiza a lista removendo o botão e mostrando "Pago"
         } else {
             alert("Erro ao processar o pagamento.");
         }
