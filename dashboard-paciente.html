@@ -51,6 +51,24 @@
                 <div id="listaConsultas" style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 10px;">
                     <p style="color: #A0AEC0; font-style: italic;">Carregando consultas...</p>
                 </div>
+                <div id="cardPagamentoSessao" style="background: #FFF; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 5px solid #2CB473; margin-bottom: 20px; display: none;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div>
+            <h3 style="color: #2D3748; margin: 0 0 5px 0; font-size: 1.2rem;">
+                <i class="fa-solid fa-wallet" style="color: #2CB473;"></i> Pagamento da Sessão Atual
+            </h3>
+            <p id="detalhesPagamentoSessao" style="color: #718096; margin: 0; font-size: 0.9rem;">
+                Sua sessão foi encerrada pelo psicólogo. Aguardando processamento...
+            </p>
+        </div>
+        <div style="text-align: right;">
+            <span id="valorPagamentoSessao" style="font-size: 1.4rem; font-weight: bold; color: #2D3748; display: block; margin-bottom: 5px;">R$ 0,00</span><br>
+            <button id="btnPagarAgora" style="background: #2CB473; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-credit-card"></i> Pagar Agora
+            </button>
+        </div>
+    </div>
+</div>
             </div>
 
             <div class="feature-card" style="text-align: left;">
@@ -77,8 +95,7 @@
     </div>
 
     <script>
-  // Executado ao carregar a página
-document.addEventListener("DOMContentLoaded", function() {
+ document.addEventListener("DOMContentLoaded", function() {
     const dadosLogado = sessionStorage.getItem("usuario_logado");
     if (!dadosLogado) {
         window.location.href = "login.html";
@@ -88,9 +105,10 @@ document.addEventListener("DOMContentLoaded", function() {
     const usuario = JSON.parse(dadosLogado);
     document.getElementById("nomeHeaderPaciente").innerHTML = `<i class="fa-solid fa-circle-user"></i> Olá, ${usuario.nome}`;
     
-    // Chamadas iniciais
+    // Chamadas iniciais ao carregar o painel
     carregarConsultas(usuario.id);
-    carregarRecibos(usuario.id);
+    verificarPagamentosPendentes(usuario.id);
+    carregarRecibosHistorico(usuario.id);
     carregarHistoricoClinico(usuario.id);
 
     // Agendamento de Consultas
@@ -150,7 +168,68 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// FUNCTIONS GLOBAIS (Fora do DOMContentLoaded para permitir chamadas via onclick)
+// FUNCTIONS GLOBAIS
+
+// 1. MONITORAMENTO EXCLUSIVO DO CARD DE PAGAMENTO DA SESSÃO ATUAL
+async function verificarPagamentosPendentes(pacienteId) {
+    const cardPagamento = document.getElementById("cardPagamentoSessao");
+    const txtDetalhes = document.getElementById("detalhesPagamentoSessao");
+    const txtValor = document.getElementById("valorPagamentoSessao");
+    const btnPagar = document.getElementById("btnPagarAgora");
+
+    try {
+        const response = await fetch(`https://ancora-backend-76ue.onrender.com/api/financeiro/${pacienteId}`);
+        const lancamentos = await response.json();
+
+        // Procura se existe alguma cobrança pendente gerada pelo psicólogo
+        const pendente = lancamentos.find(r => r.status === 'Pendente');
+
+        if (pendente) {
+            const dataFmt = pendente.data_transacao ? pendente.data_transacao.split('-').reverse().join('/') : new Date().toLocaleDateString('pt-BR');
+            
+            // Configura os dados no Card
+            txtDetalhes.innerHTML = `<strong>Sessão realizada em ${dataFmt}</strong><br>Por favor, realize o pagamento para liberar seu próximo agendamento.`;
+            txtValor.textContent = `R$ ${parseFloat(pendente.valor).toFixed(2)}`;
+            
+            // Atribui a ação do botão de pagar dinamicamente
+            btnPagar.onclick = function() {
+                executarPagamentoSessao(pendente.id, pacienteId);
+            };
+
+            // Torna o card VISÍVEL na tela
+            cardPagamento.style.display = "block";
+        } else {
+            // Se não houver pendências, esconde o card completamente
+            cardPagamento.style.display = "none";
+        }
+    } catch (err) {
+        console.error("Erro ao verificar faturas pendentes:", err);
+    }
+}
+
+// 2. PROCESSA O PAGAMENTO AO CLICAR NO BOTÃO DO CARD
+async function executarPagamentoSessao(idLancamento, pacienteId) {
+    if(!confirm("Deseja confirmar o pagamento desta sessão?")) return;
+
+    try {
+        const response = await fetch(`https://ancora-backend-76ue.onrender.com/api/financeiro/pagar/${idLancamento}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error("Não foi possível processar o pagamento.");
+
+        alert("Pagamento processado com sucesso! Muito obrigado. ⚓");
+        
+        // Recarrega todos os blocos para sumir com o card e atualizar os recibos abaixo
+        verificarPagamentosPendentes(pacienteId);
+        carregarRecibosHistorico(pacienteId);
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+// 3. MINHAS CONSULTAS AGENDADAS
 async function carregarConsultas(pacienteId) {
     const container = document.getElementById("listaConsultas");
     try {
@@ -180,46 +259,34 @@ async function carregarConsultas(pacienteId) {
     }
 }
 
-async function carregarRecibos(pacienteId) {
+// 4. HISTÓRICO DE RECIBOS E COMPROVANTES (APENAS OS JÁ PAGOS)
+async function carregarRecibosHistorico(pacienteId) {
     const container = document.getElementById("listaRecibos");
     try {
         const response = await fetch(`https://ancora-backend-76ue.onrender.com/api/financeiro/${pacienteId}`);
         const recibos = await response.json();
 
-        if(!response.ok || recibos.length === 0) {
-            container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhum comprovante ou cobrança pendente no momento.</p>';
+        // Filtra para exibir na lista inferior apenas o que já estiver quitado
+        const pagos = recibos.filter(r => r.status !== 'Pendente');
+
+        if(!response.ok || pagos.length === 0) {
+            container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhum comprovante emitido até o momento.</p>';
             return;
         }
 
         container.innerHTML = "";
-        recibos.forEach(r => {
+        pagos.forEach(r => {
             const dataTrans = r.data_transacao ? r.data_transacao.split('-').reverse().join('/') : new Date().toLocaleDateString('pt-BR');
-            
-            let acaoBotao = '';
-            // Valida o status vindo do banco de dados
-            if (r.status === 'Pendente') {
-                // 💡 CORREÇÃO AQUI: adicionado aspas simples '${r.id}' no onclick para o HTML aceitar o ID text/UUID
-                acaoBotao = `
-                    <button onclick="efetuarPagamento('${r.id}')" style="background: #2CB473; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.75rem; margin-top: 5px;">
-                        <i class="fa-solid fa-credit-card"></i> Pagar Consulta
-                    </button>
-                `;
-            } else {
-                acaoBotao = `
-                    <span style="color: #2CB473; font-weight: bold; font-size: 0.8rem;"><i class="fa-solid fa-circle-check"></i> Pago</span><br>
-                    <a href="#" onclick="alert('Download do PDF gerado com sucesso!')" style="font-size: 0.75rem; color: var(--brand-blue); text-decoration: none; font-weight: 600;"><i class="fa-solid fa-download"></i> Baixar PDF</a>
-                `;
-            }
-
             container.innerHTML += `
-                <div style="background: rgba(44, 180, 115, 0.05); padding: 12px; border-radius: 6px; border: 1px dashed var(--brand-green); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="background: rgba(44, 180, 115, 0.03); padding: 12px; border-radius: 6px; border: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <div>
                         <strong style="color: #2D3748;">${r.descricao || 'Recibo de Consulta'}</strong><br>
                         <span style="font-size: 0.8rem; color: #718096;">Data: ${dataTrans}</span>
                     </div>
                     <div style="text-align: right;">
-                        <span style="color: var(--brand-green); font-weight: bold;">R$ ${parseFloat(r.valor).toFixed(2)}</span><br>
-                        ${acaoBotao}
+                        <span style="color: var(--brand-green); font-weight: bold; display: block; margin-bottom: 2px;">R$ ${parseFloat(r.valor).toFixed(2)}</span>
+                        <span style="color: #2CB473; font-weight: bold; font-size: 0.8rem;"><i class="fa-solid fa-circle-check"></i> Pago</span><br>
+                        <a href="#" onclick="alert('Download do PDF gerado com sucesso!')" style="font-size: 0.75rem; color: var(--brand-blue); text-decoration: none; font-weight: 600;"><i class="fa-solid fa-download"></i> Baixar PDF</a>
                     </div>
                 </div>
             `;
@@ -229,29 +296,7 @@ async function carregarRecibos(pacienteId) {
     }
 }
 
-async function efectuarPagamento(idLancamento) {
-    if(!confirm("Deseja confirmar o pagamento desta consulta?")) return;
-    
-    try {
-        const response = await fetch(`https://ancora-backend-76ue.onrender.com/api/financeiro/pagar/${idLancamento}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if(response.ok) {
-            alert("Pagamento realizado com sucesso! ⚓");
-            const dadosLogado = sessionStorage.getItem("usuario_logado");
-            const usuario = JSON.parse(dadosLogado);
-            carregarRecibos(usuario.id); // Atualiza a lista removendo o botão e mostrando "Pago"
-        } else {
-            alert("Erro ao processar o pagamento.");
-        }
-    } catch (error) {
-        console.error(error);
-        alert("Erro de conexão com o servidor.");
-    }
-}
-
+// 5. HISTÓRICO CLÍNICO DO PACIENTE
 async function carregarHistoricoClinico(pacienteId) {
     const container = document.getElementById("historicoProntuarios");
     try {
@@ -269,7 +314,7 @@ async function carregarHistoricoClinico(pacienteId) {
             container.innerHTML += `
                 <div style="background: #FFF; padding: 12px; border-radius: 6px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 10px;">
                     <div style="font-size: 0.8rem; color: #718096; margin-bottom: 5px; font-weight: bold;">
-                        <i class="fa-regular fa-calendar"></i> Sessão em: ${dataFmt}
+                        <i class="fa-regular fa-calendar"></i>  Sessão em: ${dataFmt}
                     </div>
                     <p style="color: #4A5568; line-height: 1.4; font-style: italic;">"${p.conteudo}"</p>
                 </div>
