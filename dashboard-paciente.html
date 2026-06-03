@@ -51,24 +51,26 @@
                 <div id="listaConsultas" style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 10px;">
                     <p style="color: #A0AEC0; font-style: italic;">Carregando consultas...</p>
                 </div>
-                <div id="cardPagamentoSessao" style="background: #FFF; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 5px solid #2CB473; margin-bottom: 20px; display: none;">
-    <div style="display: flex; align-items: center; justify-content: space-between;">
+
+
+                <div id="cardPagamentoSessao" style="background: #FFF; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 5px solid #2CB473; margin-bottom: 20px; display: block;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
         <div>
             <h3 style="color: #2D3748; margin: 0 0 5px 0; font-size: 1.2rem;">
                 <i class="fa-solid fa-wallet" style="color: #2CB473;"></i> Pagamento da Sessão Atual
             </h3>
-            <p id="detalhesPagamentoSessao" style="color: #718096; margin: 0; font-size: 0.9rem;">
-                Sua sessão foi encerrada pelo psicólogo. Aguardando processamento...
+            <p id="detalhesPagamentoSessao" style="color: #718096; margin: 0; font-size: 0.9rem; font-style: italic;">
+                Nenhuma cobrança de sessão pendente no momento.
             </p>
         </div>
-        <div style="text-align: right;">
-            <span id="valorPagamentoSessao" style="font-size: 1.4rem; font-weight: bold; color: #2D3748; display: block; margin-bottom: 5px;">R$ 0,00</span><br>
+        <div id="blocoBotaoPagamento" style="text-align: right; display: none;">
+            <span id="valorPagamentoSessao" style="font-size: 1.4rem; font-weight: bold; color: #2D3748; display: block; margin-bottom: 5px;">R$ 0,00</span>
             <button id="btnPagarAgora" style="background: #2CB473; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-credit-card"></i> Pagar Agora
             </button>
         </div>
     </div>
-</div>
+
             </div>
 
             <div class="feature-card" style="text-align: left;">
@@ -172,38 +174,39 @@
 
 // 1. MONITORAMENTO EXCLUSIVO DO CARD DE PAGAMENTO DA SESSÃO ATUAL
 async function verificarPagamentosPendentes(pacienteId) {
-    const cardPagamento = document.getElementById("cardPagamentoSessao");
     const txtDetalhes = document.getElementById("detalhesPagamentoSessao");
     const txtValor = document.getElementById("valorPagamentoSessao");
+    const blocoBotao = document.getElementById("blocoBotaoPagamento");
     const btnPagar = document.getElementById("btnPagarAgora");
 
     try {
         const response = await fetch(`https://ancora-backend-76ue.onrender.com/api/financeiro/${pacienteId}`);
+        if (!response.ok) throw new Error("Erro na requisição da API");
+        
         const lancamentos = await response.json();
 
-        // Procura se existe alguma cobrança pendente gerada pelo psicólogo
+        // Busca se existe algum registro com o status rigorosamente 'Pendente'
         const pendente = lancamentos.find(r => r.status === 'Pendente');
 
         if (pendente) {
             const dataFmt = pendente.data_transacao ? pendente.data_transacao.split('-').reverse().join('/') : new Date().toLocaleDateString('pt-BR');
             
-            // Configura os dados no Card
-            txtDetalhes.innerHTML = `<strong>Sessão realizada em ${dataFmt}</strong><br>Por favor, realize o pagamento para liberar seu próximo agendamento.`;
+            // Atualiza os textos e exibe o botão de pagamento
+            txtDetalhes.innerHTML = `<strong style="color: #E53E3E;"><i class="fa-solid fa-triangle-exclamation"></i> Sessão encerrada em ${dataFmt}</strong><br>Por favor, realize o pagamento para liberar seus próximos agendamentos.`;
             txtValor.textContent = `R$ ${parseFloat(pendente.valor).toFixed(2)}`;
+            blocoBotao.style.display = "block"; // Mostra o preço e botão
             
-            // Atribui a ação do botão de pagar dinamicamente
             btnPagar.onclick = function() {
                 executarPagamentoSessao(pendente.id, pacienteId);
             };
-
-            // Torna o card VISÍVEL na tela
-            cardPagamento.style.display = "block";
         } else {
-            // Se não houver pendências, esconde o card completamente
-            cardPagamento.style.display = "none";
+            // Se não houver pendências, mantém o card mas com o texto neutro
+            txtDetalhes.innerHTML = `<span style="color: #2CB473;"><i class="fa-solid fa-circle-check"></i> Tudo certo!</span> Nenhuma sessão aguardando pagamento.`;
+            blocoBotao.style.display = "none"; // Esconde preço e botão
         }
     } catch (err) {
         console.error("Erro ao verificar faturas pendentes:", err);
+        txtDetalhes.innerHTML = `<span style="color: #E53E3E;">Não foi possível atualizar o status de pagamentos em tempo real.</span>`;
     }
 }
 
