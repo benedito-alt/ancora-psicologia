@@ -56,138 +56,132 @@
 
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // 1. VERIFICA LOGIN
-        const dadosLogado = sessionStorage.getItem("usuario_logado");
-        if (!dadosLogado) {
-            window.location.href = "login.html";
-            return;
-        }
+    // 1. VERIFICA LOGIN
+    const dadosLogado = sessionStorage.getItem("usuario_logado");
+    if (!dadosLogado) {
+        window.location.href = "login.html";
+        return;
+    }
 
-        const usuario = JSON.parse(dadosLogado);
-        document.getElementById("nomePsicologo").innerHTML = `<i class="fa-solid fa-user-doctor"></i> Bem-vindo, Dr(a). <strong>${usuario.nome}</strong>`;
+    const usuario = JSON.parse(dadosLogado);
+    document.getElementById("nomePsicologo").innerHTML = `<i class="fa-solid fa-user-doctor"></i> Bem-vindo, Dr(a). <strong>${usuario.nome}</strong>`;
 
-        // Variáveis de controle de atendimento
-       // No início do <script> da tela do psicólogo:
-          let pacienteSelecionadoId = null; 
+    // Variável global de controle (Padronizada)
+    let pacienteIdSelecionado = null; 
 
-// Quando o psicólogo escolhe quem vai atender na lista:
-          function iniciarAtendimento(idDoPaciente) {
-           pacienteSelecionadoId = idDoPaciente;
-    // ... restante da função que exibe os dados
-               }
-        // Carrega a lista de sessões na inicialização
-        carregarAgendaClinica();
+    // Carrega a lista de sessões na inicialização
+    carregarAgendaClinica();
 
-        // 2. BUSCA AS SESSÕES NO SERVIDOR (URL Corrigida para a Rota 7 do Backend)
-        async function carregarAgendaClinica() {
-            const container = document.getElementById("listaConsultasClinica");
-            try {
-                const response = await fetch('https://ancora-backend-76ue.onrender.com/api/psicologo/agendamentos');
-                const agendas = await response.json();
+    // 2. BUSCA AS SESSÕES NO SERVIDOR (Rota 7)
+    async function carregarAgendaClinica() {
+        const container = document.getElementById("listaConsultasClinica");
+        try {
+            const response = await fetch('https://ancora-backend-76ue.onrender.com/api/psicologo/agendamentos');
+            const agendas = await response.json();
 
-                if (!response.ok || agendas.length === 0) {
-                    container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhum agendamento ativo encontrado.</p>';
-                    return;
-                }
-
-                container.innerHTML = "";
-                agendas.forEach(a => {
-                    const dataFmt = a.data.split('-').reverse().join('/');
-                    container.innerHTML += `
-                        <div style="background: #F8F9FA; padding: 12px; border-radius: 6px; border-left: 4px solid #4299E1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <div>
-                                <strong style="color: #2D3748;">${a.paciente_nome}</strong><br>
-                                <span style="font-size: 0.8rem; color: #718096;"><i class="fa-regular fa-clock"></i> ${dataFmt} às ${a.hora.substring(0,5)}</span>
-                            </div>
-                            <button onclick="selecionarPaciente('${a.paciente_id}', '${a.paciente_nome}')" style="background: var(--brand-blue); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">
-                                Atender
-                            </button>
-                        </div>
-                    `;
-                });
-            } catch (err) {
-                container.innerHTML = '<p style="color: red;">Erro ao carregar agenda clínica.</p>';
-            }
-        }
-
-        // 3. ATIVA O CARD DE PRONTUÁRIO PARA O PACIENTE CLICADO
-        window.selecionarPaciente = function(id, nome) {
-            pacienteIdSelecionado = id;
-            const card = document.getElementById("cardProntuario");
-            card.style.opacity = "1";
-            card.style.pointerEvents = "auto";
-            document.getElementById("pacienteSelecionado").innerHTML = `<i class="fa-solid fa-user"></i> Atendendo agora: <span style="color: var(--brand-green);">${nome}</span>`;
-            document.getElementById("txtProntuario").focus();
-            
-            // Limpa mensagens antigas de status ao trocar de paciente
-            statusProntuario.style.display = "none";
-        };
-
-        // 4. SALVA O PRONTUÁRIO VINCULADO AO PACIENTE (URL Corrigida para a Rota 3 do Backend)
-        const btnSalvar = document.getElementById("btnSalvarProntuario");
-        const txtProntuario = document.getElementById("txtProntuario");
-        const statusProntuario = document.getElementById("statusProntuario");
-
-        btnSalvar.addEventListener("click", async function() {
-            const conteudo = txtProntuario.value.trim();
-
-            if (!conteudo || !pacienteIdSelecionado) {
-                statusProntuario.textContent = "Por favor, digite a evolução antes de salvar.";
-                statusProntuario.style.backgroundColor = "rgba(229, 62, 98, 0.1)";
-                statusProntuario.style.color = "#E53E3E";
-                statusProntuario.style.display = "block";
+            if (!response.ok || agendas.length === 0) {
+                container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhum agendamento ativo encontrado.</p>';
                 return;
             }
 
-            btnSalvar.disabled = true;
-            btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gravando prontuário...';
+            container.innerHTML = "";
+            agendas.forEach(a => {
+                const dataFmt = a.data.split('-').reverse().join('/');
+                container.innerHTML += `
+                    <div style="background: #F8F9FA; padding: 12px; border-radius: 6px; border-left: 4px solid #4299E1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <div>
+                            <strong style="color: #2D3748;">${a.paciente_nome}</strong><br>
+                            <span style="font-size: 0.8rem; color: #718096;"><i class="fa-regular fa-clock"></i> ${dataFmt} às ${a.hora.substring(0,5)}</span>
+                        </div>
+                        <button onclick="selecionarPaciente('${a.paciente_id}', '${a.paciente_nome}')" style="background: var(--brand-blue); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">
+                            Atender
+                        </button>
+                    </div>
+                `;
+            });
+        } catch (err) {
+            container.innerHTML = '<p style="color: red;">Erro ao carregar agenda clínica.</p>';
+        }
+    }
 
-            try {
-                const response = await fetch('https://ancora-backend-76ue.onrender.com/api/prontuario', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      psicologo_id: usuario.id,
-                      paciente_id: pacienteSelecionadoId,
-                      conteudo: documentoTextarea.value,
-                    valor_consulta: 150.00 // Define o valor da sessão aqui
-                    })
-                });
+    // 3. ATIVA O CARD DE PRONTUÁRIO PARA O PACIENTE CLICADO (Corrigido escopo global)
+    window.selecionarPaciente = function(id, nome) {
+        pacienteIdSelecionado = id; // Atribui corretamente à variável de controle
+        const card = document.getElementById("cardProntuario");
+        card.style.opacity = "1";
+        card.style.pointerEvents = "auto";
+        document.getElementById("pacienteSelecionado").innerHTML = `<i class="fa-solid fa-user"></i> Atendendo agora: <span style="color: var(--brand-green);">${nome}</span>`;
+        document.getElementById("txtProntuario").focus();
+        
+        // Limpa mensagens antigas de status ao trocar de paciente
+        statusProntuario.style.display = "none";
+    };
 
-                const dados = await response.json();
+    // 4. SALVA O PRONTUÁRIO VINCULADO AO PACIENTE (Rota 3)
+    const btnSalvar = document.getElementById("btnSalvarProntuario");
+    const txtProntuario = document.getElementById("txtProntuario");
+    const statusProntuario = document.getElementById("statusProntuario");
 
-                if (!response.ok) throw new Error(dados.error || 'Erro ao salvar prontuário.');
+    btnSalvar.addEventListener("click", async function() {
+        const conteudo = txtProntuario.value.trim();
 
-                statusProntuario.innerHTML = '<i class="fa-solid fa-circle-check"></i> Sessão encerrada e prontuário salvo!';
-                statusProntuario.style.backgroundColor = "rgba(44, 180, 115, 0.1)";
-                statusProntuario.style.color = "#2CB473";
-                statusProntuario.style.display = "block";
-                
-                // Limpa o campo de texto
-                txtProntuario.value = "";
+        if (!conteudo || !pacienteIdSelecionado) {
+            statusProntuario.textContent = "Por favor, digite a evolução antes de salvar.";
+            statusProntuario.style.backgroundColor = "rgba(229, 62, 98, 0.1)";
+            statusProntuario.style.color = "#E53E3E";
+            statusProntuario.style.display = "block";
+            return;
+        }
 
-                // RESETA O CARD DA DIREITA (Bloqueia novamente até escolher outro paciente)
-                pacienteIdSelecionado = null;
-                document.getElementById("pacienteSelecionado").innerHTML = `Nenhum paciente selecionado para atendimento.`;
+        btnSalvar.disabled = true;
+        btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gravando prontuário...';
 
-                const card = document.getElementById("cardProntuario");
-                card.style.opacity = "0.5";
-                card.style.pointerEvents = "none";
+        try {
+            const response = await fetch('https://ancora-backend-76ue.onrender.com/api/prontuario', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    psicologo_id: usuario.id,
+                    paciente_id: pacienteIdSelecionado, // Corrigido nome da variável
+                    conteudo: conteudo,               // Corrigido para a variável string válida
+                    valor_consulta: 150.00
+                })
+            });
 
-                // RECARREGA A LISTA DA ESQUERDA
-                carregarAgendaClinica();
+            const dados = await response.json();
 
-            } catch (error) {
-                statusProntuario.textContent = error.message;
-                statusProntuario.style.backgroundColor = "rgba(229, 62, 98, 0.1)";
-                statusProntuario.style.color = "#E53E3E";
-                statusProntuario.style.display = "block";
-            } finally {
-                btnSalvar.disabled = false;
-                btnSalvar.innerHTML = '<i class="fa-solid fa-circle-check"></i> Encerrar Sessão e Salvar';
-            }
-        });
+            if (!response.ok) throw new Error(dados.error || 'Erro ao salvar prontuário.');
+
+            statusProntuario.innerHTML = '<i class="fa-solid fa-circle-check"></i> Sessão encerrada e prontuário salvo!';
+            statusProntuario.style.backgroundColor = "rgba(44, 180, 115, 0.1)";
+            statusProntuario.style.color = "#2CB473";
+            statusProntuario.style.display = "block";
+            
+            // Limpa o campo de texto
+            txtProntuario.value = "";
+
+            // RESETA O CARD DA DIREITA (Bloqueia novamente até escolher outro paciente)
+            pacienteIdSelecionado = null;
+            document.getElementById("pacienteSelecionado").innerHTML = `Nenhum paciente selecionado para atendimento.`;
+
+            const card = document.getElementById("cardProntuario");
+            card.style.opacity = "0.5";
+            card.style.pointerEvents = "none";
+
+            // RECARREGA A LISTA DA ESQUERDA
+            carregarAgendaClinica();
+
+        } catch (error) {
+            statusProntuario.textContent = error.message;
+            statusProntuario.style.backgroundColor = "rgba(229, 62, 98, 0.1)";
+            statusProntuario.style.color = "#E53E3E";
+            statusProntuario.style.display = "block";
+        } finally {
+            btnSalvar.disabled = false;
+            btnSalvar.innerHTML = '<i class="fa-solid fa-circle-check"></i> Encerrar Sessão e Salvar';
+        }
     });
+});
     </script>
 </body>
 </html>
