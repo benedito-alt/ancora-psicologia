@@ -67,8 +67,14 @@
         document.getElementById("nomePsicologo").innerHTML = `<i class="fa-solid fa-user-doctor"></i> Bem-vindo, Dr(a). <strong>${usuario.nome}</strong>`;
 
         // Variáveis de controle de atendimento
-        let pacienteIdSelecionado = null;
+       // No início do <script> da tela do psicólogo:
+          let pacienteSelecionadoId = null; 
 
+// Quando o psicólogo escolhe quem vai atender na lista:
+          function iniciarAtendimento(idDoPaciente) {
+           pacienteSelecionadoId = idDoPaciente;
+    // ... restante da função que exibe os dados
+               }
         // Carrega a lista de sessões na inicialização
         carregarAgendaClinica();
 
