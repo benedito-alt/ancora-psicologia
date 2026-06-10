@@ -97,7 +97,8 @@
     </div>
 
     <script>
- document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. VERIFICA SE O USUÁRIO ESTÁ LOGADO
     const dadosLogado = sessionStorage.getItem("usuario_logado");
     if (!dadosLogado) {
         window.location.href = "login.html";
@@ -107,13 +108,19 @@
     const usuario = JSON.parse(dadosLogado);
     document.getElementById("nomeHeaderPaciente").innerHTML = `<i class="fa-solid fa-circle-user"></i> Olá, ${usuario.nome}`;
     
-    // Chamadas iniciais ao carregar o painel
+    // 2. CHAMADAS INICIAIS AO CARREGAR O PAINEL
     carregarConsultas(usuario.id);
     verificarPagamentosPendentes(usuario.id);
     carregarRecibosHistorico(usuario.id);
     carregarHistoricoClinico(usuario.id);
 
-    // Agendamento de Consultas
+    // 3. ATUALIZAÇÃO EM TEMPO REAL (Polling)
+    // Verifica cobranças novas a cada 5 segundos sem precisar dar F5 na página
+    setInterval(function() {
+        verificarPagamentosPendentes(usuario.id);
+    }, 5000);
+
+    // 4. AGENDAMENTO DE CONSULTAS
     const btnAgendar = document.getElementById("btnAgendar");
     const inputData = document.getElementById("dataAgendamento");
     const inputHora = document.getElementById("horaAgendamento");
@@ -170,6 +177,59 @@
     });
 });
 
+// 5. FUNÇÃO DO RELATÓRIO TÉCNICO (Abre a janela de impressão do Recibo Oficial)
+window.imprimirReciboFormatado = function(idTransacao) {
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
+    const janelaImpressao = window.open('', '', 'width=800,height=600');
+    
+    janelaImpressao.document.write(`
+        <html>
+        <head>
+            <title>Relatório de Recibo Clínico - Âncora</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+                .header { text-align: center; border-bottom: 2px solid #2CB473; padding-bottom: 20px; margin-bottom: 30px; }
+                .logo { font-size: 24px; font-weight: bold; color: #1A365D; }
+                .sub { color: #718096; font-size: 14px; }
+                .box-recibo { border: 1px solid #E2E8F0; padding: 20px; border-radius: 8px; background: #F8F9FA; margin-bottom: 30px; }
+                .linha { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px; }
+                .footer { text-align: center; margin-top: 50px; font-size: 12px; color: #A0AEC0; border-top: 1px dashed #CBD5E0; padding-top: 20px; }
+                .autenticacao { font-family: monospace; color: #2CB473; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="logo">⚓ Âncora Psicologia Integrada</div>
+                <div class="sub">Relatório de Emissão de Comprovante de Prestação de Serviços</div>
+            </div>
+            
+            <p>Declaramos para os devidos fins de direito e reembolso que o serviço de assistência psicológica descrito abaixo foi devidamente prestado e quitado.</p>
+            
+            <div class="box-recibo">
+                <div class="linha"><strong>Descrição do Serviço:</strong> <span>Consulta Clínica Psicológica Individual</span></div>
+                <div class="linha"><strong>Valor do Lançamento:</strong> <span style="color: #2CB473; font-weight: bold;">R$ 150,00</span></div>
+                <div class="linha"><strong>Data de Emissão do Relatório:</strong> <span>${dataAtual}</span></div>
+                <div class="linha"><strong>Status do Documento:</strong> <span style="color: #2CB473; font-weight: bold;">✓ PAGO / HOMOLOGADO</span></div>
+            </div>
+
+            <div class="box-recibo" style="background: #FFF;">
+                <div class="linha"><strong>Código de Autenticação Digital:</strong> <span class="autenticacao">ANCR-${idTransacao.substring(0,8).toUpperCase()}-2026</span></div>
+            </div>
+
+            <p style="text-align: center; margin-top: 40px;">________________________________________________________<br>Departamento Financeiro - Grupo Âncora</p>
+
+            <div class="footer">
+                Documento gerado eletronicamente pelo Sistema de Gestão Âncora Psicologia.
+            </div>
+            <script>
+                window.onload = function() { window.print(); window.close(); }
+            <\/script>
+        </body>
+        </html>
+    `);
+    
+    janelaImpressao.document.close();
+};
 // FUNCTIONS GLOBAIS
 
 // 1. MONITORAMENTO EXCLUSIVO DO CARD DE PAGAMENTO DA SESSÃO ATUAL
